@@ -1,0 +1,3109 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#f5f3ef" />
+<title>话搭子 · 先看懂，再回话</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #f5f3ef;
+    --card: #ffffff;
+    --ink: #1f1d1a;
+    --ink-2: #55504a;
+    --ink-3: #8c857a;
+    --line: #e7e2d9;
+    --line-strong: #d8d2c6;
+    --accent: #2f6b53;
+    --accent-dark: #25543f;
+    --accent-soft: #e9f0ea;
+    --ok: #2c7549;
+    --ok-bg: #e8f2ea;
+    --warn: #946410;
+    --warn-bg: #fbf1da;
+    --bad: #ac3a30;
+    --bad-bg: #faeae8;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(31, 29, 26, .04), 0 12px 28px -18px rgba(31, 29, 26, .22);
+    --fs: 1;
+  }
+  /* 大字模式：字号与行距统一放大 1.3 倍 */
+  html.big-text { --fs: 1.3; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size: calc(15px * var(--fs));
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; border: 0; background: none; }
+  svg { display: block; }
+
+  .app {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 16px 48px;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 22px 2px 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand-mark {
+    width: 34px; height: 34px;
+    flex: 0 0 34px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #f7f5f1;
+    display: grid; place-items: center;
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: calc(19px * var(--fs));
+    font-weight: 650;
+    letter-spacing: .2px;
+    line-height: 1.25;
+  }
+  .brand p {
+    margin: 1px 0 0;
+    font-size: calc(12px * var(--fs));
+    color: var(--ink-3);
+    letter-spacing: .2px;
+  }
+  .icon-btn {
+    width: 38px; height: 38px;
+    flex: 0 0 38px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .7);
+    color: var(--ink-2);
+    display: grid; place-items: center;
+    transition: background .18s, border-color .18s, transform .18s;
+  }
+  .icon-btn:hover { background: #fff; border-color: var(--line-strong); }
+  .icon-btn:active { transform: scale(.94); }
+  .icon-btn.is-set { color: #fff; border-color: var(--accent); background: var(--accent); }
+
+  /* 大字开关 */
+  .big-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 2px;
+    padding: 6px 11px;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .7);
+    color: var(--ink-2);
+    font-size: calc(13px * var(--fs));
+    font-weight: 600;
+    letter-spacing: .5px;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: background .18s, border-color .18s, color .18s, transform .12s;
+  }
+  .big-btn:hover { background: #fff; border-color: #9dbcaa; color: var(--ink); }
+  .big-btn:active { transform: scale(.94); }
+  .big-btn[aria-pressed="true"] { color: #fff; border-color: var(--accent); background: var(--accent); }
+
+  /* ---------- 输入区 ---------- */
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .field-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .label {
+    font-size: calc(13px * var(--fs));
+    font-weight: 600;
+    color: var(--ink-2);
+    letter-spacing: .3px;
+  }
+  .counter {
+    font-size: calc(11px * var(--fs));
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .counter.over { color: var(--bad); font-weight: 600; }
+  /* 截图入口：降级为「懒得打字」时的备选，主路径是上面粘文字 */
+  .upload-zone {
+    width: 100%;
+    height: auto;
+    min-height: 96px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--radius);
+    background: #fbfaf7;
+    text-align: center;
+    transition: border-color .16s, background .16s;
+    order: 3;
+  }
+  .upload-zone:hover { border-color: #9dbcaa; background: #fff; }
+  .upload-zone:focus-visible { outline: 2px solid #9dbcaa; outline-offset: 2px; }
+  .upload-zone:disabled { cursor: default; opacity: .7; }
+  .upload-zone:disabled:hover { border-color: var(--line-strong); background: #fbfaf7; }
+  .upload-title {
+    font-size: calc(18px * var(--fs));
+    font-weight: 650;
+    letter-spacing: .2px;
+    color: var(--ink);
+  }
+  .upload-sub {
+    font-size: calc(13px * var(--fs));
+    line-height: 1.6;
+    color: var(--ink-3);
+  }
+  @media (max-width: 560px) {
+    .upload-zone { height: auto; min-height: 180px; padding: 32px 18px; }
+  }
+  .shot-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 12px;
+    order: 2;
+  }
+  .manual-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--ink-2);
+    font-size: calc(13px * var(--fs));
+    transition: border-color .16s, color .16s;
+  }
+  .manual-toggle:hover { border-color: #9dbcaa; color: var(--ink); }
+  .manual-toggle svg { transition: transform .18s; }
+  .manual-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .manual-zone { margin-top: 0; order: 1; }
+  .shot-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: #fff;
+    font-family: inherit;
+    font-size: calc(14px * var(--fs));
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: border-color .16s, color .16s, transform .12s;
+  }
+  .shot-btn:hover { border-color: #9dbcaa; color: var(--ink); }
+  .shot-btn:active { transform: scale(.98); }
+  .shot-btn[disabled] { opacity: .55; cursor: default; transform: none; }
+  #inputText {
+    display: block;
+    width: 100%;
+    min-height: 130px;
+    padding: 13px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: #fbfaf7;
+    font-family: inherit;
+    font-size: calc(16px * var(--fs));
+    line-height: 1.55;
+    color: var(--ink);
+    outline: none;
+    resize: vertical;
+    transition: border-color .16s, background .16s, box-shadow .16s;
+  }
+  #inputText::placeholder { color: #a9a298; }
+  #inputText:focus {
+    border-color: #9dbcaa;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(47, 107, 83, .08);
+  }
+  #inputText.has-error { border-color: #d9a9a3; background: #fffaf9; }
+
+  .selects {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  @media (min-width: 560px) {
+    .selects { grid-template-columns: 1fr 1fr; }
+  }
+  .select-wrap { position: relative; }
+  .select-wrap > span {
+    display: block;
+    margin-bottom: 6px;
+    font-size: calc(12px * var(--fs));
+    color: var(--ink-3);
+  }
+  .select-wrap select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 11px 34px 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: #fbfaf7;
+    font-size: calc(14px * var(--fs));
+    color: var(--ink);
+    outline: none;
+    text-overflow: ellipsis;
+    transition: border-color .16s, background .16s;
+  }
+  .select-wrap select:focus { border-color: #9dbcaa; background: #fff; }
+  .select-wrap .chev {
+    position: absolute;
+    right: 12px;
+    bottom: 13px;
+    pointer-events: none;
+    color: var(--ink-3);
+  }
+
+  .btn-primary {
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: calc(16px * var(--fs));
+    font-weight: 600;
+    letter-spacing: .5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background .16s, transform .12s;
+  }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-primary:active { transform: scale(.99); }
+  .btn-primary[disabled] { opacity: .65; cursor: default; }
+  .btn-primary[disabled]:hover { background: var(--accent); }
+
+  .inline-msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    background: var(--bad-bg);
+    color: var(--bad);
+    font-size: calc(13px * var(--fs));
+    line-height: 1.5;
+  }
+  .inline-msg svg { flex: 0 0 16px; margin-top: 2px; }
+  .inline-msg[hidden] { display: none; }
+
+  /* ---------- 示例 ---------- */
+  .examples { margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--line); }
+  .examples-title {
+    margin: 0 0 10px;
+    font-size: calc(12px * var(--fs));
+    color: var(--ink-3);
+  }
+  .example {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 11px 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    background: #fbfaf7;
+    transition: border-color .16s, background .16s, transform .12s;
+  }
+  .example:last-child { margin-bottom: 0; }
+  .example:hover { border-color: #c6d5cb; background: #fff; }
+  .example:active { transform: scale(.995); }
+  .example .ex-who {
+    display: inline-block;
+    font-size: calc(11px * var(--fs));
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 5px;
+    padding: 1px 6px;
+    margin-bottom: 5px;
+  }
+  .example .ex-text {
+    display: block;
+    font-size: calc(13px * var(--fs));
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .example .ex-text b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- 结果区 ---------- */
+  #resultArea { margin-top: 18px; }
+  #resultArea:empty { margin-top: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 14px;
+    animation: rise .34s cubic-bezier(.2, .7, .3, 1) both;
+  }
+  .card:nth-child(2) { animation-delay: .05s; }
+  .card:nth-child(3) { animation-delay: .1s; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: calc(15px * var(--fs));
+    font-weight: 650;
+    letter-spacing: .2px;
+  }
+  .card-title .idx {
+    font-size: calc(11px * var(--fs));
+    font-weight: 600;
+    color: var(--ink-3);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 0 5px;
+    line-height: calc(17px * var(--fs));
+    font-variant-numeric: tabular-nums;
+  }
+  .risk {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: calc(12px * var(--fs));
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .risk .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .risk.ok { color: var(--ok); background: var(--ok-bg); }
+  .risk.warn { color: var(--warn); background: var(--warn-bg); }
+  .risk.bad { color: var(--bad); background: var(--bad-bg); }
+
+  .explain {
+    margin: 0;
+    font-size: calc(16px * var(--fs));
+    line-height: 1.7;
+    color: var(--ink);
+    overflow-wrap: break-word;
+  }
+  .want {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #faf8f3;
+    font-size: calc(14px * var(--fs));
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .want .k {
+    flex: 0 0 auto;
+    color: var(--ink-3);
+  }
+  .want b { color: var(--ink); font-weight: 600; }
+
+  /* 回法 */
+  .reply {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 11px 12px;
+    margin-bottom: 10px;
+    background: #fdfcfa;
+  }
+  .reply:last-child { margin-bottom: 0; }
+  .reply-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .reply-tag {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: calc(13px * var(--fs));
+    font-weight: 650;
+    color: var(--ink);
+  }
+  .reply-tag em {
+    font-style: normal;
+    font-size: calc(11px * var(--fs));
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+  .btn-copy {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink-2);
+    font-size: calc(12px * var(--fs));
+    transition: color .16s, border-color .16s, background .16s;
+  }
+  .btn-copy:hover { border-color: var(--line-strong); color: var(--ink); }
+  .btn-copy.done { color: var(--accent); border-color: #c9dccf; background: var(--accent-soft); }
+  .btn-speak {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 9px;
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink-2);
+    font-size: calc(12px * var(--fs));
+    transition: color .16s, border-color .16s, background .16s;
+  }
+  .btn-speak:hover { border-color: var(--line-strong); color: var(--ink); }
+  .btn-speak[disabled] { opacity: .5; cursor: default; }
+  .btn-speak.on { color: var(--accent); border-color: #c9dccf; background: var(--accent-soft); }
+  .reply-text {
+    margin: 0;
+    font-size: calc(15px * var(--fs));
+    line-height: 1.65;
+    color: var(--ink);
+    word-break: break-word;
+  }
+
+  /* 避雷 */
+  .avoid-item {
+    display: flex;
+    gap: 9px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0ece4;
+  }
+  .avoid-item:last-child { border-bottom: 0; padding-bottom: 0; }
+  .avoid-item:first-child { padding-top: 0; }
+  .avoid-no {
+    flex: 0 0 20px;
+    height: 20px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: var(--bad-bg);
+    color: var(--bad);
+    display: grid;
+    place-items: center;
+  }
+  .avoid-say {
+    margin: 0 0 2px;
+    font-size: calc(14px * var(--fs));
+    line-height: 1.6;
+  }
+  .avoid-say b { font-weight: 600; }
+  .avoid-say .quote { color: var(--bad); }
+  .avoid-why {
+    margin: 0;
+    font-size: calc(13px * var(--fs));
+    line-height: 1.6;
+    color: var(--ink-3);
+    overflow-wrap: break-word;
+  }
+
+  /* 骨架屏 */
+  .skeleton-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .sk-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: calc(14px * var(--fs));
+    color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+  .sk-spinner {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    border: 2px solid #e2ddd4;
+    border-top-color: var(--accent);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sk-line {
+    height: 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+    background: linear-gradient(90deg, #f1eee8 25%, #f8f6f2 37%, #f1eee8 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.3s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+  }
+  .sk-line.w90 { width: 90%; }
+  .sk-line.w70 { width: 70%; }
+  .sk-line.w50 { width: 50%; }
+
+  /* 简版结果顶部的小字说明 */
+  .simple-note {
+    margin: 0 2px 10px;
+    font-size: calc(12px * var(--fs));
+    line-height: 1.6;
+    color: var(--ink-3);
+  }
+  .btn-ghost {
+    padding: 9px 18px;
+    border-radius: 9px;
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    font-size: calc(14px * var(--fs));
+    color: var(--ink);
+  }
+  .btn-ghost:hover { border-color: #b9b2a5; }
+
+  /* 底部 */
+  .footnote {
+    margin-top: 22px;
+    text-align: center;
+    font-size: calc(12px * var(--fs));
+    line-height: 1.7;
+    color: #a49d92;
+  }
+
+  /* ---------- 设置弹层 ---------- */
+  .sheet-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 25, 21, .38);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity .22s;
+    z-index: 40;
+  }
+  .sheet-mask.open { opacity: 1; }
+  .sheet-mask[hidden] { display: none; }
+  .sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 41;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--card);
+    border-radius: 18px 18px 0 0;
+    padding: 8px 18px calc(18px + env(safe-area-inset-bottom));
+    box-shadow: 0 -12px 40px rgba(28, 25, 21, .18);
+    transform: translateY(102%);
+    transition: transform .26s cubic-bezier(.22, .8, .3, 1);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .sheet.open { transform: none; }
+  .sheet[hidden] { display: none; }
+  .sheet-grip {
+    width: 38px; height: 4px;
+    border-radius: 2px;
+    background: #e3ded5;
+    margin: 4px auto 12px;
+  }
+  .sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .sheet-head h2 { margin: 0; font-size: calc(16px * var(--fs)); font-weight: 650; }
+  .sheet-desc {
+    margin: 0 0 12px;
+    font-size: calc(12.5px * var(--fs));
+    line-height: 1.65;
+    color: var(--ink-3);
+  }
+  .conn-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: calc(12px * var(--fs));
+    background: #f4f2ed;
+    color: var(--ink-3);
+  }
+  .conn-state .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .conn-state.on { background: var(--ok-bg); color: var(--ok); }
+  .sheet-field { margin-bottom: 13px; }
+  .sheet-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: calc(12px * var(--fs));
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .sheet-field label em {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+  .sheet-field input {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fbfaf7;
+    font-size: calc(14px * var(--fs));
+    outline: none;
+    transition: border-color .16s, background .16s;
+  }
+  .sheet-field input:focus { border-color: #9dbcaa; background: #fff; }
+  .sheet-field input::placeholder { color: #b0a99e; }
+  .sheet-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .sheet-actions .btn-primary { margin-top: 0; flex: 1; }
+  .sheet-actions .btn-ghost { flex: 0 0 auto; }
+  .sheet-note {
+    margin: 12px 0 0;
+    font-size: calc(11.5px * var(--fs));
+    line-height: 1.7;
+    color: #a49d92;
+  }
+  .test-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .test-row .btn-ghost { padding: 8px 14px; font-size: calc(13px * var(--fs)); }
+  .test-row .btn-ghost[disabled] { opacity: .6; cursor: default; }
+  .test-status {
+    font-size: calc(12px * var(--fs));
+    line-height: 1.5;
+    color: var(--ink-3);
+    overflow-wrap: anywhere;
+  }
+  .test-status.ok { color: var(--ok); font-weight: 600; }
+  .test-status.bad { color: var(--bad); font-weight: 600; }
+
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid #ecdcb8;
+    border-radius: 11px;
+    background: #fdf6e6;
+    color: #7c5a12;
+    font-size: calc(13px * var(--fs));
+    line-height: 1.55;
+  }
+  .notice svg { flex: 0 0 15px; margin-top: 2px; }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translate(-50%, 14px);
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: rgba(31, 29, 26, .92);
+    color: #fff;
+    font-size: calc(13px * var(--fs));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 60;
+    white-space: nowrap;
+    max-width: calc(100vw - 40px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+<script>
+  /* 大字开关状态，在首次绘制前生效，避免闪一下小字 */
+  try {
+    if (localStorage.getItem('hdz.bigText') === '1') document.documentElement.classList.add('big-text');
+  } catch (e) {}
+</script>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 11.5a7.5 7.5 0 0 1-10.9 6.7L4 19.5l1.4-4.8A7.5 7.5 0 1 1 20 11.5Z"/>
+          <path d="M9 10.5h6M9 13.5h3.5"/>
+        </svg>
+      </span>
+      <div>
+        <h1>话搭子</h1>
+        <p>先看懂，再回话</p>
+      </div>
+      <button id="btnBig" class="big-btn" type="button" aria-pressed="false" aria-label="大字模式：把字号和行距放大" title="看不清字？点一下放大">大字</button>
+    </div>
+    <button id="btnSettings" class="icon-btn" type="button" aria-label="设置接口地址和 Key" aria-haspopup="dialog">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3.2"/>
+        <path d="M19.4 14.5a1.6 1.6 0 0 0 .32 1.77l.06.06a1.9 1.9 0 1 1-2.7 2.7l-.05-.06a1.6 1.6 0 0 0-1.78-.32 1.6 1.6 0 0 0-.97 1.47V20a1.9 1.9 0 1 1-3.8 0v-.1a1.6 1.6 0 0 0-1.05-1.46 1.6 1.6 0 0 0-1.77.32l-.06.06a1.9 1.9 0 1 1-2.7-2.7l.06-.06a1.6 1.6 0 0 0 .32-1.77 1.6 1.6 0 0 0-1.47-.97H4a1.9 1.9 0 1 1 0-3.8h.1a1.6 1.6 0 0 0 1.46-1.05 1.6 1.6 0 0 0-.32-1.77l-.06-.06a1.9 1.9 0 1 1 2.7-2.7l.06.06a1.6 1.6 0 0 0 1.77.32H9.9A1.6 1.6 0 0 0 10.87 4V3.9a1.9 1.9 0 1 1 3.8 0V4a1.6 1.6 0 0 0 .97 1.47 1.6 1.6 0 0 0 1.78-.32l.05-.06a1.9 1.9 0 1 1 2.7 2.7l-.06.06a1.6 1.6 0 0 0-.32 1.77v.1a1.6 1.6 0 0 0 1.47.97H20a1.9 1.9 0 1 1 0 3.8h-.1a1.6 1.6 0 0 0-1.47.97Z"/>
+      </svg>
+    </button>
+  </header>
+
+  <main>
+    <section class="panel" aria-label="传聊天截图">
+      <button id="btnShot" class="upload-zone" type="button">
+        <span class="upload-title">懒得打字？传张截图</span>
+        <span class="upload-sub">图片认字只看印刷体，你自己设了花样字体会认不准，认完能直接改 · 也可以 Ctrl+V 粘图</span>
+      </button>
+      <input id="fileShot" type="file" accept="image/*" hidden />
+
+      <div class="shot-actions">
+        <button id="btnReset" class="shot-btn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5.2h5V7M6.5 7l.9 12.2h9.2L17.5 7"/></svg>
+          <span>换一段</span>
+        </button>
+
+        <button id="btnToggleManual" class="manual-toggle" type="button" aria-expanded="true" aria-controls="manualArea" style="display:none">
+          <span id="btnToggleManualText">粘贴</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <div id="manualArea" class="manual-zone">
+        <div class="field-head">
+          <label class="label" for="inputText">对方说了什么</label>
+          <span class="counter" id="counter">0 / 2000</span>
+        </div>
+        <textarea id="inputText" rows="6" placeholder="把对方的话粘进来，连着几句一起贴更准" maxlength="6000" spellcheck="false" aria-describedby="inlineMsg"></textarea>
+
+        <div class="selects">
+          <div class="select-wrap">
+            <span>对方是谁</span>
+            <select id="selWho" aria-label="对方是谁">
+              <option value="家里长辈">家里长辈</option>
+              <option value="亲戚">亲戚</option>
+              <option value="朋友">朋友</option>
+              <option value="同事">同事</option>
+              <option value="老师或导员">老师或导员</option>
+              <option value="上司或客户">上司或客户</option>
+              <option value="陌生号码或陌生短信">陌生号码或陌生短信</option>
+            </select>
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="select-wrap">
+            <span>我想达到什么效果</span>
+            <select id="selGoal" aria-label="我想达到什么效果">
+              <option value="把话说清楚">把话说清楚</option>
+              <option value="想拒绝但不伤感情">想拒绝但不伤感情</option>
+              <option value="想缓和一下">想缓和一下</option>
+              <option value="想答应但要留余地">想答应但要留余地</option>
+              <option value="想不出错就行">想不出错就行</option>
+            </select>
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </div>
+
+        <button id="btnAnalyze" class="btn-primary" type="button">
+          <span id="btnAnalyzeText">帮我看懂</span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <div id="inlineMsg" class="inline-msg" role="alert" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/></svg>
+        <span id="inlineMsgText"></span>
+      </div>
+
+      <div class="examples">
+        <p class="examples-title">没想好贴什么？点一条试试</p>
+
+        <button class="example" type="button" data-example="0">
+          <span class="ex-who">家里长辈</span>
+          <span class="ex-text">我爸：<b>“你那个手机套餐一个月多少钱？我听你王叔说现在有个更便宜的，你别被人坑了。”</b></span>
+        </button>
+
+        <button class="example" type="button" data-example="1">
+          <span class="ex-who">老师或导员</span>
+          <span class="ex-text">导师：<b>“上次让你改的那个表格，改好了吗？明天上午开会要用。”</b></span>
+        </button>
+
+        <button class="example" type="button" data-example="2">
+          <span class="ex-who">陌生号码</span>
+          <span class="ex-text"><b>“【医保局】您的医保账户异常，将于今日停用，请点击链接补录信息。”</b></span>
+        </button>
+      </div>
+    </section>
+
+    <section id="resultArea" aria-live="polite" aria-label="分析结果"></section>
+  </main>
+
+  <p class="footnote">只做一次分析，不保存你粘贴的内容，也不会替你发出任何消息</p>
+</div>
+
+<div id="sheetMask" class="sheet-mask" hidden></div>
+<div id="settingsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-grip"></div>
+  <div class="sheet-head">
+    <h2 id="sheetTitle">接上模型</h2>
+    <button class="icon-btn" id="btnCloseSheet" type="button" aria-label="关掉">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+  <p class="sheet-desc">内置示例不用配置也能跑。接上 DeepSeek 后，就能看懂你自己粘贴的话。默认地址和模型已经填好，只差一个 Key。</p>
+  <p class="conn-state" id="connState"><span class="dot"></span><span id="connStateText">现在还没接模型</span></p>
+
+  <div class="sheet-field">
+    <label for="apiUrl">接口地址 <em>（默认 DeepSeek）</em></label>
+    <input id="apiUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://api.deepseek.com/chat/completions" />
+  </div>
+  <div class="sheet-field">
+    <label for="apiKey">Key</label>
+    <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴你的 DeepSeek Key" />
+  </div>
+  <div class="sheet-field">
+    <label for="apiModel">模型名 <em>（默认 deepseek-chat）</em></label>
+    <input id="apiModel" type="text" autocomplete="off" spellcheck="false" placeholder="deepseek-chat" />
+  </div>
+
+  <p class="sheet-desc" style="margin-top:18px">截图认字要另配一个「会看图的接口」。DeepSeek 只能读文字、看不了图，所以这一格空着时，截图识别只能在你电脑浏览器上凑合。填了它，手机电脑都能直接传截图。</p>
+  <div class="sheet-field">
+    <label for="vUrl">识图接口地址 <em>（默认阿里云百炼）</em></label>
+    <input id="vUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions" />
+  </div>
+  <div class="sheet-field">
+    <label for="vKey">识图 Key <em>（不填就不启用截图识别）</em></label>
+    <input id="vKey" type="password" autocomplete="off" spellcheck="false" placeholder="粘贴会看图那个接口的 Key" />
+  </div>
+  <div class="sheet-field">
+    <label for="vModel">识图模型名 <em>（默认 qwen3-vl-plus）</em></label>
+    <input id="vModel" type="text" autocomplete="off" spellcheck="false" placeholder="qwen3-vl-plus" />
+  </div>
+
+  <div class="test-row">
+    <button id="btnTest" class="btn-ghost" type="button">测试连接</button>
+    <span id="testStatus" class="test-status" role="status"></span>
+  </div>
+
+  <div class="sheet-actions">
+    <button id="btnSaveSettings" class="btn-primary" type="button">存下</button>
+    <button id="btnClearSettings" class="btn-ghost" type="button">清空</button>
+  </div>
+  <p class="sheet-note">Key 只存在你这台设备的浏览器里，不上传到别处，也不存在代码里。页面会直接用浏览器请求 DeepSeek，不经过任何代理。公共电脑用完记得清空。</p>
+</div>
+
+<div id="toast" class="toast" role="status"></div>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 本地演示数据（不走网络，没有 Key 也能跑完） ---------- */
+  var DEMO = [
+    {
+      who: '家里长辈',
+      text: '你那个手机套餐一个月多少钱？我听你王叔说现在有个更便宜的，你别被人坑了。',
+      risk: 'ok',
+      explain: '他在担心你话费花多了，想帮你省点钱。拿王叔举例，不是查你的账。',
+      want: '看看有没有更便宜的套餐，最好换掉。',
+      replies: {
+        steady: '现在一个月五十多，够用。我这两天比一比，有划算的再跟你说。',
+        close: '爸，你还惦记这个。我这套餐还行，真涨价了我第一个找你商量。',
+        refuse: '先不换了，换完还得重新折腾。真贵了我就跟你说。'
+      },
+      avoid: [
+        { say: '你别管了，我自己有数', why: '他会听成你嫌他啰嗦，以后有话也不跟你讲了。' },
+        { say: '王叔说的不一定对', why: '他会觉得你在驳他面子，事就从省钱变成谁说得对了。' },
+        { say: '我花多少跟你有关系吗', why: '他会理解成你在防着他，一句关心变成一句冒犯。' }
+      ]
+    },
+    {
+      who: '老师或导员',
+      text: '上次让你改的那个表格，改好了吗？明天上午开会要用。',
+      risk: 'warn',
+      explain: '他在催你交表格，语气还算客气。明天上午就要用，今天得给他。',
+      want: '今天之内把改好的表格交上去。',
+      replies: {
+        steady: '改好了，我下午发您。有两处数据我再核一遍，免得会上出问题。',
+        close: '改完了，下午发您。开会前要还有要调的，您随时喊我。',
+        refuse: '今天整份赶不完。我先把改好的发您，剩下两处明早九点前补齐。'
+      },
+      avoid: [
+        { say: '改着呢', why: '他听不出哪天能拿到，只会觉得你在拖。' },
+        { say: '不是说下周才用吗', why: '他会觉得你在跟他掰扯时间，不是在解决问题。' },
+        { say: '我尽量', why: '他会理解成没把握，明天开会不敢指望你。' }
+      ]
+    },
+    {
+      who: '陌生号码或陌生短信',
+      text: '【医保局】您的医保账户异常，将于今日停用，请点击链接补录信息。',
+      risk: 'bad',
+      explain: '冒充医保局的短信，拿“今天停用”吓你点链接。真医保局不会发链接让你补信息。',
+      want: '点链接，把身份证和银行卡填进去。',
+      replies: {
+        steady: '你是哪个单位的？我先打官方电话核实，链接不点。',
+        close: '这条我截图发家里群了，谁都别点，也别回。',
+        refuse: '不补。有事我打医保局官方电话问，链接我不点。'
+      },
+      avoid: [
+        { say: '我点开看看是不是真的', why: '一点就可能中招，链接本身就是陷阱。' },
+        { say: '我回一句骂他', why: '对方就知道这号有人用，骚扰只会更多。' },
+        { say: '先填一半试试', why: '填了就收不住，身份证和卡号给出去追不回来。' }
+      ]
+    }
+  ];
+
+  var RISK = {
+    ok: { cls: 'ok', label: '正常' },
+    warn: { cls: 'warn', label: '要留意' },
+    bad: { cls: 'bad', label: '可能有问题' }
+  };
+
+  var REPLIES = [
+    { key: 'steady', label: '稳妥版', hint: '不出错、不站队' },
+    { key: 'close', label: '亲近版', hint: '有温度、能拉近关系' },
+    { key: 'refuse', label: '拒绝版', hint: '明确拒绝但不撕破脸' }
+  ];
+
+  var MAX_LEN = 2000;
+  var STORE = { url: 'hdz.apiUrl', key: 'hdz.apiKey', model: 'hdz.apiModel', vUrl: 'hdz.vUrl', vKey: 'hdz.vKey', vModel: 'hdz.vModel', bigText: 'hdz.bigText' };
+  var DEFAULTS = {
+    url: 'https://api.deepseek.com/chat/completions',
+    model: 'deepseek-chat',
+    vUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    vModel: 'qwen3-vl-plus'
+  };
+
+  var state = {
+    busy: false,
+    result: null
+  };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var resultArea = $('resultArea');
+  var input = $('inputText');
+  var counter = $('counter');
+  var inlineMsg = $('inlineMsg');
+  var inlineMsgText = $('inlineMsgText');
+  var btnAnalyze = $('btnAnalyze');
+  var btnAnalyzeText = $('btnAnalyzeText');
+  var manualArea = $('manualArea');
+  var btnToggleManual = $('btnToggleManual');
+  var btnToggleManualText = $('btnToggleManualText');
+  var uploadSub = document.querySelector('.upload-sub');
+  var uploadSubText = uploadSub ? uploadSub.textContent : '';
+
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function riskInfo(raw) {
+    var v = String(raw || '').trim();
+    if (v === 'warn' || v === '要留意') return RISK.warn;
+    if (v === 'bad' || v === '可能有问题') return RISK.bad;
+    if (v === 'ok' || v === '正常') return RISK.ok;
+    return RISK.warn;
+  }
+
+  /* ---------- 视图 ---------- */
+  function showInline(text) {
+    if (Array.isArray(text)) {
+      inlineMsgText.innerHTML = text.map(function (t) { return esc(t); }).join('<br>');
+    } else {
+      inlineMsgText.textContent = text;
+    }
+    inlineMsg.hidden = false;
+    input.classList.add('has-error');
+  }
+
+  function hideInline() {
+    inlineMsg.hidden = true;
+    inlineMsgText.textContent = '';
+    input.classList.remove('has-error');
+  }
+
+  /* 粘贴是主路径：输入区常开，不再收放 */
+  function setManual(open) {
+    manualArea.hidden = false;
+    btnToggleManual.setAttribute('aria-expanded', 'true');
+    btnToggleManualText.textContent = '粘贴';
+  }
+
+  /* 上传区忙时锁住，副标题临时显示进度 */
+  function setShotBusy(busy, text) {
+    $('btnShot').disabled = !!busy;
+    if (uploadSub) uploadSub.textContent = busy && text ? text : uploadSubText;
+  }
+
+  function skeleton() {
+    var line = '<div class="sk-line w90"></div><div class="sk-line w70"></div><div class="sk-line w50"></div>';
+    return '' +
+      '<div class="skeleton-card">' +
+        '<div class="sk-loading"><span class="sk-spinner"></span>正在看懂对方在说什么</div>' +
+        line +
+      '</div>' +
+      '<div class="skeleton-card">' + line + '</div>' +
+      '<div class="skeleton-card">' + line + '</div>';
+  }
+
+  function renderLoading() {
+    cancelSpeak();
+    state.result = null;
+    resultArea.innerHTML = skeleton();
+  }
+
+  function renderResult(data, notice) {
+    cancelSpeak();
+    var risk = riskInfo(data.risk);
+    state.result = data;
+    var noticeHtml = notice
+      ? '<div class="notice">' +
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5h.01M12 11v5"/></svg>' +
+          '<span>' + esc(notice) + '</span>' +
+        '</div>'
+      : '';
+
+    var repliesHtml = REPLIES.map(function (item) {
+      var text = (data.replies && data.replies[item.key]) || '';
+      return '' +
+        '<div class="reply">' +
+          '<div class="reply-top">' +
+            '<span class="reply-tag">' + esc(item.label) + '<em>' + esc(item.hint) + '</em></span>' +
+            '<button class="btn-copy" type="button" data-copy="' + item.key + '">' +
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4"/></svg>' +
+              '<span>复制</span>' +
+            '</button>' +
+          '</div>' +
+          '<p class="reply-text">' + esc(text) + '</p>' +
+          '<button class="btn-speak" type="button" data-speak="' + item.key + '">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3Z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>' +
+            '<span>念给我听</span>' +
+          '</button>' +
+        '</div>';
+    }).join('');
+
+    var avoidHtml = (data.avoid || []).map(function (item) {
+      return '' +
+        '<div class="avoid-item">' +
+          '<span class="avoid-no" aria-hidden="true">' +
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
+          '</span>' +
+          '<div>' +
+            '<p class="avoid-say">别说<span class="quote">“' + esc(item.say) + '”</span></p>' +
+            '<p class="avoid-why">' + esc(item.why) + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+
+    resultArea.innerHTML = noticeHtml +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<h2 class="card-title"><span class="idx">1</span>这叫啥意思</h2>' +
+          '<span class="risk ' + risk.cls + '"><span class="dot"></span>' + risk.label + '</span>' +
+        '</div>' +
+        '<p class="explain">' + esc(data.explain) + '</p>' +
+        '<div class="want"><span class="k">他其实想让你</span><b>' + esc(data.want) + '</b></div>' +
+      '</section>' +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<h2 class="card-title"><span class="idx">2</span>你可以这么回</h2>' +
+        '</div>' +
+        repliesHtml +
+      '</section>' +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<h2 class="card-title"><span class="idx">3</span>别这么说</h2>' +
+        '</div>' +
+        avoidHtml +
+      '</section>';
+  }
+
+  /* 没接模型或接口失败时的简版结果：按关键词猜的三张卡 */
+  function renderLocalSimple(data, note) {
+    cancelSpeak();
+    state.result = data;
+    var risk = riskInfo(data.risk);
+
+    var list = data.only
+      ? REPLIES.filter(function (i) { return i.key === data.only; })
+      : REPLIES.slice(0, 2);
+    var repliesHtml = list.map(function (item) {
+      var text = (data.replies && data.replies[item.key]) || '';
+      return '' +
+        '<div class="reply">' +
+          '<div class="reply-top">' +
+            '<span class="reply-tag">' + esc(item.label) + '<em>' + esc(item.hint) + '</em></span>' +
+            '<button class="btn-copy" type="button" data-copy="' + item.key + '">' +
+              '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h4"/></svg>' +
+              '<span>复制</span>' +
+            '</button>' +
+          '</div>' +
+          '<p class="reply-text">' + esc(text) + '</p>' +
+          '<button class="btn-speak" type="button" data-speak="' + item.key + '">' +
+            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9v6h4l5 4V5L7 9H3Z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>' +
+            '<span>念给我听</span>' +
+          '</button>' +
+        '</div>';
+    }).join('');
+
+    var avoidHtml = (data.avoid || []).map(function (item) {
+      return '' +
+        '<div class="avoid-item">' +
+          '<span class="avoid-no" aria-hidden="true">' +
+            '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>' +
+          '</span>' +
+          '<div>' +
+            '<p class="avoid-say">别说<span class="quote">“' + esc(item.say) + '”</span></p>' +
+            '<p class="avoid-why">' + esc(item.why) + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+
+    resultArea.innerHTML =
+      '<p class="simple-note">' + esc(note) + '</p>' +
+      (data.short ? '<p class="simple-note">这句只有几个字，多说一句都像在争，先给一句稳的。</p>' : '') +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<h2 class="card-title"><span class="idx">1</span>这叫啥意思</h2>' +
+          '<span class="risk ' + risk.cls + '"><span class="dot"></span>' + risk.label + '</span>' +
+        '</div>' +
+        '<p class="explain">' + esc(data.explain) + '</p>' +
+      '</section>' +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<h2 class="card-title"><span class="idx">2</span>你可以这么回</h2>' +
+        '</div>' +
+        repliesHtml +
+      '</section>' +
+      '<section class="card">' +
+        '<div class="card-head">' +
+          '<h2 class="card-title"><span class="idx">3</span>别这么说</h2>' +
+        '</div>' +
+        avoidHtml +
+      '</section>';
+  }
+
+  /* ---------- 设置 ---------- */
+  var sheet = $('settingsSheet');
+  var mask = $('sheetMask');
+
+  function readSettings() {
+    try {
+      return {
+        url: (localStorage.getItem(STORE.url) || '').trim() || DEFAULTS.url,
+        key: (localStorage.getItem(STORE.key) || '').trim(),
+        model: (localStorage.getItem(STORE.model) || '').trim() || DEFAULTS.model,
+        vUrl: (localStorage.getItem(STORE.vUrl) || '').trim() || DEFAULTS.vUrl,
+        vKey: (localStorage.getItem(STORE.vKey) || '').trim(),
+        vModel: (localStorage.getItem(STORE.vModel) || '').trim() || DEFAULTS.vModel
+      };
+    } catch (e) {
+      return { url: DEFAULTS.url, key: '', model: DEFAULTS.model, vUrl: DEFAULTS.vUrl, vKey: '', vModel: DEFAULTS.vModel };
+    }
+  }
+
+  function hasKey() {
+    return !!readSettings().key;
+  }
+
+  function hasVision() {
+    return !!readSettings().vKey;
+  }
+
+  function syncGear() {
+    var on = hasKey();
+    $('btnSettings').classList.toggle('is-set', on);
+    $('connState').classList.toggle('on', on);
+    $('connStateText').textContent = on ? '已经接好了，可以分析你自己粘贴的话' : '现在还没接模型';
+  }
+
+  function setTest(cls, text) {
+    var el = $('testStatus');
+    el.className = 'test-status' + (cls ? ' ' + cls : '');
+    el.textContent = text;
+  }
+
+  function openSheet() {
+    var s = readSettings();
+    $('apiUrl').value = s.url;
+    $('apiKey').value = s.key;
+    $('apiModel').value = s.model;
+    $('vUrl').value = s.vUrl;
+    $('vKey').value = s.vKey;
+    $('vModel').value = s.vModel;
+    setTest('', '');
+    $('btnTest').disabled = false;
+    $('btnTest').textContent = '测试连接';
+    sheet.hidden = false;
+    mask.hidden = false;
+    requestAnimationFrame(function () {
+      sheet.classList.add('open');
+      mask.classList.add('open');
+    });
+    setTimeout(function () { $('apiUrl').focus(); }, 300);
+  }
+
+  function closeSheet() {
+    sheet.classList.remove('open');
+    mask.classList.remove('open');
+    setTimeout(function () {
+      if (sheet.classList.contains('open')) return;
+      sheet.hidden = true;
+      mask.hidden = true;
+    }, 260);
+  }
+
+  var toastTimer = null;
+  function toast(text) {
+    var el = $('toast');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2400);
+  }
+
+  $('btnSaveSettings').addEventListener('click', function () {
+    var url = $('apiUrl').value.trim() || DEFAULTS.url;
+    var key = $('apiKey').value.trim();
+    var model = $('apiModel').value.trim() || DEFAULTS.model;
+    var vUrl = $('vUrl').value.trim() || DEFAULTS.vUrl;
+    var vKey = $('vKey').value.trim();
+    var vModel = $('vModel').value.trim() || DEFAULTS.vModel;
+    if (!key) {
+      toast('Key 还没填');
+      return;
+    }
+    try {
+      localStorage.setItem(STORE.url, url);
+      localStorage.setItem(STORE.key, key);
+      localStorage.setItem(STORE.model, model);
+      localStorage.setItem(STORE.vUrl, vUrl);
+      localStorage.setItem(STORE.vModel, vModel);
+      if (vKey) localStorage.setItem(STORE.vKey, vKey);
+      else localStorage.removeItem(STORE.vKey);
+    } catch (e) {
+      toast('这个浏览器不让存，换个浏览器再试');
+      return;
+    }
+    syncGear();
+    closeSheet();
+    toast(vKey ? '接好了，截图也能认了' : '接好了，粘自己的话就能用');
+    if (!state.result) resultArea.innerHTML = '';
+  });
+
+  $('btnClearSettings').addEventListener('click', function () {
+    try {
+      localStorage.removeItem(STORE.url);
+      localStorage.removeItem(STORE.key);
+      localStorage.removeItem(STORE.model);
+      localStorage.removeItem(STORE.vUrl);
+      localStorage.removeItem(STORE.vKey);
+      localStorage.removeItem(STORE.vModel);
+    } catch (e) { /* 存不了也就不用清 */ }
+    $('apiUrl').value = DEFAULTS.url;
+    $('apiKey').value = '';
+    $('apiModel').value = DEFAULTS.model;
+    $('vUrl').value = DEFAULTS.vUrl;
+    $('vKey').value = '';
+    $('vModel').value = DEFAULTS.vModel;
+    setTest('', '');
+    syncGear();
+    toast('清空了');
+  });
+
+  function extractReason(body) {
+    var text = String(body || '').trim();
+    try {
+      var json = JSON.parse(text);
+      var msg = json && json.error && (json.error.message || json.error.type);
+      if (!msg && json && json.message) msg = json.message;
+      if (msg) return String(msg).slice(0, 120);
+    } catch (e) { /* 不是 JSON，下面直接截原文 */ }
+    if (text.charAt(0) === '<') return '接口返回了网页，不是模型结果';
+    return text ? text.slice(0, 120) : '没有返回内容';
+  }
+
+  $('btnTest').addEventListener('click', function () {
+    var btn = $('btnTest');
+    var url = $('apiUrl').value.trim() || DEFAULTS.url;
+    var key = $('apiKey').value.trim();
+    var model = $('apiModel').value.trim() || DEFAULTS.model;
+    if (!key) {
+      setTest('bad', '先填 Key');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '正在测';
+    setTest('', '正在连 ' + model + ' …');
+
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 20000) : null;
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + key
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [{ role: 'user', content: 'ping' }],
+        max_tokens: 8,
+        stream: false
+      }),
+      signal: controller ? controller.signal : undefined
+    }).then(function (res) {
+      return res.text().then(function (body) {
+        if (!res.ok) {
+          setTest('bad', '失败 ' + res.status + ' · ' + extractReason(body));
+          return;
+        }
+        var json = null;
+        try { json = JSON.parse(body); } catch (e) { json = null; }
+        if (!json || !json.choices || !json.choices.length) {
+          setTest('bad', '失败 ' + res.status + ' · 返回里没有模型结果');
+          return;
+        }
+        setTest('ok', '已连通 · ' + model);
+      });
+    }).catch(function (err) {
+      if (err && err.name === 'AbortError') setTest('bad', '超时 · 20 秒没响应');
+      else setTest('bad', '连不上 · 检查地址或网络');
+    }).then(function () {
+      if (timer) clearTimeout(timer);
+      btn.disabled = false;
+      btn.textContent = '测试连接';
+    });
+  });
+
+  $('btnSettings').addEventListener('click', openSheet);
+
+  /* ---------- 大字开关 ---------- */
+  var btnBig = $('btnBig');
+
+  function applyBigText(on, persist) {
+    document.documentElement.classList.toggle('big-text', on);
+    btnBig.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (persist) {
+      try { localStorage.setItem(STORE.bigText, on ? '1' : '0'); } catch (e) {}
+    }
+  }
+
+  var bigOn = document.documentElement.classList.contains('big-text');
+  applyBigText(bigOn, false);
+  btnBig.addEventListener('click', function () {
+    bigOn = !bigOn;
+    applyBigText(bigOn, true);
+  });
+
+  $('btnCloseSheet').addEventListener('click', closeSheet);
+  mask.addEventListener('click', closeSheet);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeSheet();
+  });
+
+  /* ---------- 复制 ---------- */
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).catch(function () {
+        return fallbackCopy(text);
+      });
+    }
+    return fallbackCopy(text);
+  }
+
+  function fallbackCopy(text) {
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (err) {
+        ok = false;
+      }
+      document.body.removeChild(ta);
+      ok ? resolve() : reject(new Error('copy failed'));
+    });
+  }
+
+  /* ---------- 浏览器语音合成 ---------- */
+  var curUtter = null;
+  var curSpeakBtn = null;
+
+  function cancelSpeak() {
+    if (!curUtter) return;
+    try { window.speechSynthesis.cancel(); } catch (e) {}
+    if (curSpeakBtn) {
+      curSpeakBtn.classList.remove('on');
+      var span = curSpeakBtn.querySelector('span');
+      if (span) span.textContent = '念给我听';
+    }
+    curUtter = null;
+    curSpeakBtn = null;
+  }
+
+  function pickVoice(voices) {
+    var names = ['female', 'Female', 'woman', 'Woman', '晓晓', '晓伊', 'yaoyao', 'Yaoyao',
+                 'Ting-Ting', 'tingting', 'Hui', 'huiyun', 'Yunxi', 'yunxi'];
+    var femaleZh = voices.filter(function (v) {
+      var n = (v.name || '').toLowerCase();
+      var l = (v.lang || '').toLowerCase();
+      if (l !== 'zh-cn' && l !== 'zh') return false;
+      return names.some(function (kw) { return n.indexOf(kw.toLowerCase()) >= 0; });
+    });
+    if (femaleZh.length) return femaleZh[0];
+    var anyZh = voices.filter(function (v) {
+      var l = (v.lang || '').toLowerCase();
+      return l === 'zh-cn' || l === 'zh';
+    });
+    if (anyZh.length) return anyZh[0];
+    return voices[0] || null;
+  }
+
+  function ensureVoices() {
+    if (!window.speechSynthesis) return Promise.resolve([]);
+    var tryOnce = function () { return window.speechSynthesis.getVoices() || []; };
+    var voices = tryOnce();
+    if (voices.length) return Promise.resolve(voices);
+
+    return new Promise(function (resolve) {
+      var waited = 0;
+      var waitMs = [120, 260, 500];
+      function tick() {
+        var v = tryOnce();
+        if (v.length) return resolve(v);
+        if (waited >= waitMs.length) return resolve([]);
+        setTimeout(function () { waited++; tick(); }, waitMs[waited]);
+      }
+      window.speechSynthesis.onvoiceschanged = function () {
+        var v = tryOnce();
+        if (v.length) resolve(v);
+      };
+      tick();
+    });
+  }
+
+  function speakText(text, btn) {
+    if (!window.speechSynthesis || !('SpeechSynthesisUtterance' in window)) {
+      toast('这个浏览器没语音，换 Chrome 或 Edge 试试');
+      return;
+    }
+    if (!text) return;
+
+    // 重复点同一个按钮 → 停掉
+    if (curUtter && curSpeakBtn === btn) {
+      cancelSpeak();
+      return;
+    }
+    cancelSpeak();
+
+    ensureVoices().then(function (voices) {
+      if (!voices.length) {
+        toast('浏览器没装语音包，去系统里装个中文 TTS 或换 Chrome');
+        return;
+      }
+      var voice = pickVoice(voices);
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = (voice && voice.lang) || 'zh-CN';
+      u.voice = voice;
+      u.rate = 0.95;
+      u.pitch = 1.05;
+      u.volume = 1;
+
+      u.onend = function () {
+        if (curUtter !== u) return;
+        if (curSpeakBtn) {
+          curSpeakBtn.classList.remove('on');
+          var span = curSpeakBtn.querySelector('span');
+          if (span) span.textContent = '念给我听';
+        }
+        curUtter = null;
+        curSpeakBtn = null;
+      };
+      u.onerror = function (ev) {
+        if (ev && ev.error === 'canceled') return; // 用户自己停的，不提示
+        if (curUtter !== u) return;
+        cancelSpeak();
+        var code = (ev && ev.error) || '';
+        if (code === 'not-allowed' || code === 'interrupted') {
+          toast('浏览器不让读，换个浏览器或看看是不是静音了');
+        } else if (code === 'synthesis-unavailable') {
+          toast('系统语音服务没起来，装个中文语音包再试');
+        } else if (code === 'audio-busy') {
+          toast('正在放别的，等会儿再点');
+        } else {
+          toast('读不出来：' + (code || '未知原因'));
+        }
+      };
+
+      curUtter = u;
+      curSpeakBtn = btn;
+      btn.classList.add('on');
+      var span = btn.querySelector('span');
+      if (span) span.textContent = '停掉';
+      window.speechSynthesis.speak(u);
+    });
+  }
+
+  /* ---------- 请求模型 ---------- */
+  var SYSTEM_PROMPT = [
+    '你是「话搭子」，帮人看懂别人发来的话，再给出能直接发出去的回法。只输出一个 JSON 对象，不要解释，不要代码块。',
+    '格式：{"risk":"ok|warn|bad","explain":"不超过80字","want":"不超过40字","replies":{"steady":"不超过60字","close":"不超过60字","refuse":"不超过60字"},"avoid":[{"say":"原话","why":"为什么不能这么说、会被理解成什么"}]}',
+    '要求：',
+    '1. explain 用大白话，像跟朋友讲，不用“您”，不用书面语，不加引号。',
+    '2. want 以动词开头，说清对方真正想要你做什么，别写“他其实想让你”。',
+    '3. risk：正常用 ok；有截止时间、要留意用 warn；疑似诈骗、威胁、要账号密码用 bad。',
+    '4. replies 三档：steady 不出错不站队；close 有温度能拉近关系；refuse 明确拒绝但不撕破脸。都要像人说的话，短句，可以有语气词，不能油腻。',
+    '5. 三档回法都要按“对方是谁”调整语气：长辈要尊重、不顶撞；亲戚客气、留面子；朋友可以松一点、带点玩笑；同事专业直接；老师或导员礼貌、有分寸；上司或客户正式、留余地；陌生号码或陌生短信一律警惕，不透露个人信息，不点链接。',
+    '6. 禁止出现“理解您的感受”“希望对您有帮助”“根据您的情况”“如有疑问随时联系”这类客服腔。',
+    '7. avoid 正好 3 条，say 是具体的一句原话，不带引号，不超过20字；why 说清会被理解成什么，不超过40字。',
+    '8. 不做翻译，不说教，不评价用户，不替用户发出任何消息。',
+    '9. 输入可能是一整段聊天记录：多行，可能带“我：”“对方：”这种标注。前面几句只用来判断关系、语气和上下文，结论和三档回法只针对最后一句，不点评前面的内容。',
+    '10. 只针对最后一句给结论和三档回法，不要逐句分析。如果最后一句是“我”发的（左侧/绿色气泡，或文字前标注了“我：”），就不要替他回答，改成告诉他“接下来该怎么接”，并说明对方刚说的是什么。'
+  ].join('\n');
+
+  function parseResult(content) {
+    if (!content) return null;
+    var text = String(content).trim()
+      .replace(/^```(?:json)?/i, '')
+      .replace(/```$/, '')
+      .trim();
+    var start = text.indexOf('{');
+    var end = text.lastIndexOf('}');
+    if (start < 0 || end <= start) return null;
+    try {
+      var raw = JSON.parse(text.slice(start, end + 1));
+      var r = raw.replies || {};
+      var avoid = (raw.avoid || []).map(function (it) {
+        return { say: String(it.say || '').trim(), why: String(it.why || '').trim() };
+      }).filter(function (it) { return it.say && it.why; }).slice(0, 3);
+      var data = {
+        risk: raw.risk,
+        explain: String(raw.explain || raw.meaning || '').trim(),
+        want: String(raw.want || '').trim(),
+        replies: {
+          steady: String(r.steady || '').trim(),
+          close: String(r.close || '').trim(),
+          refuse: String(r.refuse || '').trim()
+        },
+        avoid: avoid
+      };
+      if (!data.explain || !data.replies.steady || !data.replies.close || !data.replies.refuse || avoid.length < 3) return null;
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function callModel(s, text, who, goal, strict) {
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 45000) : null;
+    var system = SYSTEM_PROMPT + (strict
+      ? '\n再强调一次：只输出 JSON 对象，第一个字符是 {，最后一个字符是 }，不要解释，不要代码块。'
+      : '');
+
+    return fetch(s.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + s.key
+      },
+      body: JSON.stringify({
+        model: s.model,
+        temperature: 0.5,
+        max_tokens: 1200,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: '对方是谁：' + who + '\n我想达到的效果：' + goal + '\n对方发来的原话（可能连着好几句，请按顺序连着看）：\n' + text + '\n只需要针对最后这一句给回法。' }
+        ]
+      }),
+      signal: controller ? controller.signal : undefined
+    }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }).then(function (json) {
+      if (json && json.choices && json.choices[0] && json.choices[0].message) {
+        return json.choices[0].message.content || '';
+      }
+      if (json && typeof json.content === 'string') return json.content;
+      if (json && typeof json.output_text === 'string') return json.output_text;
+      return '';
+    }).then(function (content) {
+      if (timer) clearTimeout(timer);
+      return content;
+    }, function (err) {
+      if (timer) clearTimeout(timer);
+      throw err;
+    });
+  }
+
+  function analyzeByModel(s, text, who, goal) {
+    return callModel(s, text, who, goal, false).then(function (content) {
+      var data = parseResult(content);
+      if (data) return data;
+      return callModel(s, text, who, goal, true).then(function (content2) {
+        return parseResult(content2);
+      }, function () {
+        return null;
+      });
+    });
+  }
+
+  /* 模型两次都没给出可用 JSON 时，用本地规则兜底 */
+  function localFallback(text) {
+    var scam = /医保|社保|银行卡|卡号|验证码|密码|链接|转账|汇款|冻结|停用|中奖|退款|贷款|额度|公安|法院|快递丢失|补录|客服/.test(text);
+    var push = /明天|今天|今晚|尽快|截止|好了吗|什么时候|催|要用|等着|马上|赶紧/.test(text);
+
+    if (scam) {
+      return {
+        risk: 'bad',
+        explain: '这条在拿停用和链接逼你快点操作。正规单位不会发链接让你补信息。',
+        want: '点链接，把信息或者钱交出去。',
+        replies: {
+          steady: '你是哪个单位的？我先打官方电话核实，链接不点。',
+          close: '这条我先发给家里人看，谁都别点，也别回。',
+          refuse: '不办。有事我自己打官方电话问。'
+        },
+        avoid: [
+          { say: '我点开看看真假', why: '一点就可能中招，链接本身就是陷阱。' },
+          { say: '我先填一半', why: '填了就收不住，身份证和卡号给出去追不回来。' },
+          { say: '我回他一句', why: '对方就知道这号有人用，骚扰会更多。' }
+        ]
+      };
+    }
+
+    if (push) {
+      return {
+        risk: 'warn',
+        explain: '他在等你给个准信，时间有点紧。不是故意为难你。',
+        want: '说清什么时候能给，别让他干等。',
+        replies: {
+          steady: '收到了，我这边弄完就发你，今天给你准信。',
+          close: '记着呢，弄好第一时间发你，不耽误你事。',
+          refuse: '这个时间我赶不上。我先交一部分，剩下的明天补。'
+        },
+        avoid: [
+          { say: '改着呢', why: '他听不出哪天能拿到，只会觉得你在拖。' },
+          { say: '我尽量', why: '他会理解成没把握，不敢指望你。' },
+          { say: '你催什么', why: '事就从交东西变成吵一架，更慢。' }
+        ]
+      };
+    }
+
+    return {
+      risk: 'ok',
+      explain: '他在问一件跟你有关的事，语气正常，不催也不急。',
+      want: '给他一个明确的回话就行。',
+      replies: {
+        steady: '我看一下，晚点回你。',
+        close: '收到，你说的事我记着了，回头细聊。',
+        refuse: '这个我先不答应，等我弄清楚了再跟你说。'
+      },
+      avoid: [
+        { say: '随便', why: '他会觉得你没当回事，事情还得再问一遍。' },
+        { say: '知道了', why: '太短，他分不清你是同意还是敷衍。' },
+        { say: '再说吧', why: '他会理解成你在拖着不办。' }
+      ]
+    };
+  }
+
+  /* 没接模型或接口失败时的关键词简版：只针对最后一句的场景猜个大概 */
+  var SIMPLE_SCENES = [
+    { key: 'money', re: /转账|红包|借钱|打钱/, risk: 'warn', explain: '大概是长辈在提钱，先别急着答应。' },
+    { key: 'scam', re: /链接|点击|验证|银行|医保|中奖|冻结|立案/, risk: 'bad', explain: '大概率诈骗，要紧，别点链接。' },
+    { key: 'push', re: /明天|后天|几点|开会|交|发我|改好/, risk: 'warn', explain: '在催事或有时间要求，及时回。' }
+  ];
+
+  /* 按"对方是谁"分四种语气：长辈亲戚、朋友同事、老师上司、陌生号码 */
+  var SIMPLE_REPLIES = {
+    elder: {
+      money: {
+        steady: '这事先别急，我看看手头情况，晚点给您个准信。',
+        close: '您惦记这个我挺暖的，钱的事我自己先算算，不够再跟您开口。'
+      },
+      scam: {
+        steady: '这条我先不点，打个官方电话问问，核实了再说。',
+        close: '您也提醒下家里人，这种链接谁都别点，我先去核实。'
+      },
+      push: {
+        steady: '记着呢，我弄好就发您，今天给您准信。',
+        close: '您放心，我惦记着这事，弄好第一时间跟您说。'
+      },
+      general: {
+        steady: '看到了，我回头看看，晚点跟您细说。',
+        close: '嗯嗯我记下了，回头我再多问您两句。'
+      }
+    },
+    peer: {
+      money: {
+        steady: '这事我得先看下自己情况，晚点回你，不急着这会儿定。',
+        close: '你开口我肯定上心，我先盘算一下，晚点给你准话。'
+      },
+      scam: {
+        steady: '我先不点，打官方电话核实一下再说。',
+        close: '这看着不太对，我先核实，你也别点。'
+      },
+      push: {
+        steady: '收到，我弄完就发你，今天给你信儿。',
+        close: '记着呢，好了第一时间喊你。'
+      },
+      general: {
+        steady: '看到啦，我回头看看，晚点回你。',
+        close: '收到，回头咱细聊。'
+      }
+    },
+    formal: {
+      money: {
+        steady: '收到，这件事我需要先核实一下，尽快给您明确答复。',
+        close: '谢谢您跟我说，我先把手头情况理顺，再来跟您确认。'
+      },
+      scam: {
+        steady: '我先通过官方渠道核实，不做任何操作。',
+        close: '收到，我会先核实真伪，也提醒您注意。'
+      },
+      push: {
+        steady: '收到，我今天内处理好并回复您。',
+        close: '好的，我抓紧办，有进展随时向您同步。'
+      },
+      general: {
+        steady: '收到，我确认后回复您。',
+        close: '好的，我看一下，稍后向您汇报。'
+      }
+    }
+  };
+
+  /* ---------- 自建话术库：15 类意图，本地判断，不走模型 ----------
+     模型只负责判意图、抠槽位，句子从库里取。语气才稳，才不像 AI 写的。 */
+  var INTENT_LIB = [
+    {
+      id: 'refuse', name: '被拒绝', risk: 'warn', shortReply: '知道了，那我不申请了。', meaning: '对方不再评你的理由，改用「规定就是这样」定调。再解释难处，她会觉得你在跟她争。',
+      want: '别再争这一条，看你接下来怎么办',
+      keys: '不批|不行|不可以|没法|一律不|按规定|不符合|不予|不能给|校纪校规|校规|规定的事宜|不是.{0,8}可以请假',
+      replies: [
+        '我明白了，这条规定上确实没有。{{事}}我按流程改个时间再来。',
+        '那我不为难您了。{{事}}要怎么弄您说一句，我照做。',
+        '那我不走这个了，往后挪到{{时间点}}，{{事}}不耽误。'
+      ],
+      avoid: [
+        ['为什么别的同学能批', '她被逼着证明自己公平，只会更硬。'],
+        ['我已经报名了退不了', '她只看规定，不看你的难处，听着像讨价还价。'],
+        ['只回「好的」', '等于承认你本来就不该申请，下次更难开口。']
+      ]
+    },
+    {
+      id: 'urge', name: '被催', risk: 'warn', meaning: '对方要的是「现在能不能给我」，不是听进度。带着截止时间来的，已经在往下排了。',
+      want: '现在就给一个能兑现的时间',
+      keys: '改好了吗|什么时候|还要多久|必须交|务必|明天要用|等着用|赶紧|尽快|截止|催一下|下班前|这么慢|这么慢啊|动工',
+      replies: [
+        '{{事}}还差{{部分}}，{{时间点}}给您。',
+        '我盯着呢，{{部分}}再有一会儿就完，{{时间点}}前到您这儿。',
+        '{{部分}}我一个人弄不完，能不能先把{{事}}交过去，剩下的{{时间点}}补齐？'
+      ],
+      avoid: [
+        ['在弄了', '没有时间点，对方还得再问一遍，你也多欠一次。'],
+        ['马上', '说不上来多久，这两个字最像敷衍。'],
+        ['解释为什么没做完', '对方要的是交付，理由是借口。']
+      ]
+    },
+    {
+      id: 'probe', name: '被试探', risk: 'warn', meaning: '对方把自己说得很不值，等你反驳。他在试你会不会被几句话劝退，不是在真骂你。',
+      want: '别被几句话劝退，也别急着证明',
+      keys: '你喜欢我什么|你见过我吗|了解我吗|网络而已|别搞笑了|新鲜感|你只不过|廉价',
+      replies: [
+        '我确实只看到你打的字，别笑我。我要真是随便的人，也不会跟你说这些。',
+        '你这么说我有点难受，但我知道你为什么这么说。我不着急，你想聊再聊。',
+        '行，那我不说这些了。你要是不想聊，我先不打扰。'
+      ],
+      avoid: [
+        ['连发「我是真心的」', '越解释越像在证明，对方更看不上。'],
+        ['赌气「那算了」', '一走对方就认定你只是新鲜感。'],
+        ['立刻报细节', '像在交作业，不像真心。']
+      ]
+    },
+    {
+      id: 'sneer', name: '被阴阳', risk: 'warn', shortReply: '是我没赶到，我认。', meaning: '表面让步，实际在记账。对方把选择权丢给你，让你欠着，不结掉后面合作会别扭。',
+      want: '把这笔账当面结掉',
+      keys: '行吧|反正你也不差|你忙|随你|无所谓|你开心就好|是我多事|了不起',
+      replies: [
+        '这次确实是我没赶上，{{事}}我认。现在要补哪块你说。',
+        '你说得对，我这次躲了。别记账了，{{时间点}}我把{{事}}补上。',
+        '那这次我先不揽了，免得拖你。下次提前说，我留时间。'
+      ],
+      avoid: [
+        ['我真的很忙', '忙在对方眼里不算理由。'],
+        ['顺着说「那下次吧」', '这笔账就记下了。'],
+        ['「你别多想」', '等于说她小心眼。']
+      ]
+    },
+    {
+      id: 'care', name: '被追问 / 家里人', risk: 'ok', meaning: '对方不是真在问那句话本身（感叹号、标点、吃没吃），而是嫌你回得冷，在找能接着说的话题。',
+      want: '回一句有内容的话，让她知道你在',
+      keys: '什么意思|你怎么不|在干嘛|吃了吗|怎么不回|是不是不舒服|早点睡|吃没吃|感叹号',
+      replies: [
+        '刚忙完，{{时间点}}吃点热的，你别惦记。',
+        '刚才在忙，回得急。今天吃了，你别担心。',
+        '我一会儿给你发张照片，你看一眼。'
+      ],
+      avoid: [
+        ['解释「感叹号就是个标点」', '她关心的不是语法。'],
+        ['「你烦不烦」', '这一句对方能记很久。'],
+        ['只回一个表情', '她要的是话，不是表情。']
+      ]
+    },
+    {
+      id: 'borrow', name: '借钱', risk: 'warn', meaning: '对方开口借钱，最怕的不是被拒，是被晾着。含糊、拖、装没看见，关系崩得比直接拒还快。',
+      want: '今天给一个明确答复',
+      keys: '借我|周转|手头紧|先垫|过两天还|帮个忙|借点',
+      replies: [
+        '我这边手头也紧，这个数帮不上，别生我气。',
+        '我拿不出这么多，能先给你一点，不用还。',
+        '钱我真没有，{{事}}这个我能帮。'
+      ],
+      avoid: [
+        ['「我看看」「过两天说」', '对方会当你不想给又不好意思拒。'],
+        ['直接不回', '借钱的人最会数时间，装没看见比拒绝伤。'],
+        ['「你怎么老是这样」', '把一次借钱变成对人品的评判。']
+      ]
+    },
+    {
+      id: 'dun', name: '被催款 / 被追责', risk: 'warn', meaning: '对方要的是你认不认这笔账。争对错最容易把小事闹大，先认时间，再谈细节。',
+      want: '认账，给个日子',
+      keys: '什么时候还|结算|稿费|拖了多久|说好的|怎么还没|给个说法|结清|打款',
+      replies: [
+        '这笔我认，{{时间点}}先给你一部分，剩下的{{时间点}}清。',
+        '是我拖了，不好意思。{{时间点}}一定到，中间有变化我提前说。',
+        '我现在一次拿不出，能不能分两次，我按这个来。'
+      ],
+      avoid: [
+        ['「我什么时候说过」', '争这个只会让对方觉得你要赖。'],
+        ['「又不是不还」', '对方要的是时间，不是态度。'],
+        ['等对方再问一次', '第二次被催，关系就降一档。']
+      ]
+    },
+    {
+      id: 'invite', name: '约见面 / 被约', risk: 'ok', shortReply: '在，你先说。', meaning: '对方抛了具体时间地点，等你确认。这时候模糊回答最伤人，等于让对方一直悬着。',
+      want: '给个准话，别让人悬着',
+      keys: '有空吗|一起吃|出来玩|几点|周末|见一面|在吗',
+      replies: [
+        '{{时间点}}我有空，地点你定，我过去。',
+        '想去，{{时间点}}行。我提前动身，你别等我。',
+        '{{时间点}}我去不了，换个时间可以，你看哪个方便？'
+      ],
+      avoid: [
+        ['「看情况」「到时候再说」', '等于让人一直等，比拒绝还难受。'],
+        ['答应了再临时取消', '一次就透支信任。'],
+        ['「你安排就行」然后不参与', '对方会觉得只有自己在使劲。']
+      ]
+    },
+    {
+      id: 'sorry', name: '对方道歉', risk: 'ok', meaning: '对方在给台阶。追着要解释等于把台阶踢掉；一句「没事」又太轻，像没听进去。',
+      want: '接住台阶，别翻旧账',
+      keys: '对不起|我错了|是我不好|别生气|抱歉|怪我',
+      replies: [
+        '我知道了。这事翻篇，{{事}}咱们照原来来。',
+        '你道歉我收了。我不想为这个跟你生分。',
+        '翻篇可以，那件事别再这样，我做得到就直说。'
+      ],
+      avoid: [
+        ['「你错哪儿了」', '对方刚给台阶就被审，容易翻脸。'],
+        ['「没事没事」然后心里记着', '下次爆发的还是同一件事。'],
+        ['顺势加码要补偿', '把道歉变成交易。']
+      ]
+    },
+    {
+      id: 'blame', name: '被甩锅', risk: 'warn', meaning: '对方在把责任往你身上挪。这时候情绪化反驳最吃亏，得先给一条能核对的事实。',
+      want: '先钉事实，再谈怎么办',
+      keys: '都是你|你怎么没|不是你负责吗|早说了|怪你|你怎么不说|态度有问题|工作态度|还是.{0,6}重要|拖几天',
+      replies: [
+        '这块是我负责的没错，当时的情况是这样。现在先补哪块，你说。',
+        '我认我该认的那部分。你也看一下，咱们别来回猜。',
+        '要定责任咱们对着记录过一遍，一起看，别口头掰扯。'
+      ],
+      avoid: [
+        ['「不是我」三个字开头', '对方听的是撇清，不是解释。'],
+        ['在群里公开对线', '当着人吵，输赢都难看。'],
+        ['先道歉再讲事实', '道歉在前，后面的话听着都像补救。']
+      ]
+    },
+    {
+      id: 'cold', name: '被冷处理', risk: 'ok', shortReply: '那你先忙，我不催。', meaning: '对方不是没看见，是不想接。追问只会更冷，给一次低压力的出口就够了。',
+      want: '给一次低压力的出口，别追问',
+      keys: '嗯|哦|好的|在忙|晚点说|知道了|行吧|随便',
+      replies: [
+        '那你先忙，{{事}}我不催，{{时间点}}再跟你说。',
+        '感觉你今天不太想说话，我就不问了。需要我的时候喊我。',
+        '行，那这事我先自己弄。{{时间点}}前给你结果。'
+      ],
+      avoid: [
+        ['「在吗」「怎么不回」', '连发是最快把关系弄凉的方式。'],
+        ['转头发朋友圈', '对方看得见，只是不会回。'],
+        ['赌气「以后不找你了」', '对方多半当真，你就没了下一次。']
+      ]
+    },
+    {
+      id: 'chat', name: '正常闲聊 / 接话', risk: 'ok', meaning: '对方在给话头，等你接。最忌只回「哈哈」「好」，也别一上来讲大道理。',
+      want: '接住话头，把天聊下去',
+      keys: '在干嘛|今天|刚看到|你说呢|哈哈|吃了没|忙啥|喜欢你|喜欢上你|想你了',
+      replies: [
+        '刚看到你发的。你呢，{{时间点}}忙不忙？',
+        '你这么说我都想马上过去了。',
+        '我这边正忙，晚点细聊。'
+      ],
+      avoid: [
+        ['只回「哈哈」「好」', '等于把话头扔回去再让它掉地上。'],
+        ['一上来讲道理', '闲聊不是讨论，讲道理最赶人。'],
+        ['连发十几条', '对方回不过来，就不回了。']
+      ]
+    },
+    {
+      id: 'accuse', name: '被质问 / 被扣帽子', risk: 'warn', meaning: '对方已经不谈具体事，开始挑你的态度或能力。这时候解释事情经过会更糟，得先接住「态度」这一层。',
+      want: '先接态度，再办事',
+      keys: '不行了是吧|什么态度|你怎么这样|一点纪律|组织纪律|组织观念|明知故犯|你每次都|你自己看看|有没有点|一点儿',
+      replies: [
+        '是我说得不对，刚才那句我收回来。{{事}}我按您说的办。',
+        '您这么一说我也过意不去。这地方我确实没做对，我马上补。',
+        '您先别气，是我没说明白。{{时间点}}我把{{事}}补上。'
+      ],
+      avoid: [
+        ['「我怎么了」', '等于问他凭什么，他会接着往下数落。'],
+        ['从头解释整件事的经过', '他要的是态度，不是过程。'],
+        ['「我没错」', '这一句出口，后面说什么都白搭。']
+      ]
+    },
+    {
+      id: 'threat', name: '被威胁', risk: 'bad', meaning: '对方拿工作、关系、面子当筹码，意思是「你再这样试试」。不硬顶，也不立刻认怂，只接事不接筹码。',
+      want: '只接事，不接筹码',
+      keys: '还想不想|这份工作|你等着|别怪我|以后别找我|再给你一次|自己掂量|对得起',
+      replies: [
+        '这话我听见了。{{事}}我{{时间点}}做完，别的事我不敢应。',
+        '您别急，这活我肯定办。{{时间点}}给您个准话。',
+        '哪儿不行您直说，我改。别的我不敢赌。'
+      ],
+      avoid: [
+        ['「你凭什么」', '直接对撞，等于把话说死。'],
+        ['立刻「都是我错」', '认了就等于接受他开的价。'],
+        ['干脆不回', '对方会加码再来一次，下次更重。']
+      ]
+    },
+    {
+      id: 'selfError', name: '我说错话了', risk: 'warn', meaning: '这一类的输入是你自己发出去的消息：赌气、把责任推回去、连发追问。它不给「怎么回对方」，给的是「这句有什么问题、接着怎么补」。',
+      want: '把刚才那句收回来，给个补救',
+      keys: '算我旷课|随便吧|你爱怎样|我不管了|呵呵|烦不烦|我不是说了吗|行行行|你直接算',
+      replies: [
+        '刚才那句是我急了，不算数。{{事}}我按您说的办。',
+        '我说话冲了，对不起。这事我不赌气，{{时间点}}办完。',
+        '我收回那句。{{时间点}}我把{{事}}发您。'
+      ],
+      avoid: [
+        ['再解释「我不是那个意思」', '越描越像还在争。'],
+        ['删掉重发一遍', '对方已经看见了，也可能已经截图。'],
+        ['直接消失不理', '这句会一直挂在那儿，下次见面更难看。']
+      ]
+    }
+  ];
+
+  var SLOT_FALLBACK = { '时间点': '晚上', '时间': '晚上', '部分': '剩下的', '事': '这事' };
+
+  function guessTimeSlot(text) {
+    var m = String(text || '').match(/(今天|明天|后天|大后天|今晚|明早|上午|下午|晚上|中午|下周[一二三四五六日天]?|周[一二三四五六日天]|\d{1,2}\s*月\s*\d{1,2}\s*[日号]|\d{1,2}\s*[日号]|\d{1,2}\s*[点:：]\s*\d{0,2})/);
+    return m ? m[0].replace(/\s+/g, '') : '';
+  }
+
+  function fillSlots(tpl, text) {
+    var time = guessTimeSlot(text) || SLOT_FALLBACK['时间点'];
+    return String(tpl).replace(/\{\{([^}]+)\}\}/g, function (all, k) {
+      if (k === '时间点' || k === '时间') return time;
+      return SLOT_FALLBACK[k] || '这事';
+    });
+  }
+
+  /* 只取最后一句人说的话：跳过时间戳、占位、状态栏 */
+  function lastRealLine(text) {
+    var lines = String(text || '').split('\n');
+    for (var i = lines.length - 1; i >= 0; i--) {
+      var l = (lines[i] || '').trim();
+      if (!l) continue;
+      if (/^\s*(?:昨天|今天|前天|上午|下午|晚上|星期[一二三四五六日天])?\s*\d{1,2}[:：]\d{2}\s*$/.test(l)) continue;
+      if (/^\s*\[\S{1,6}\]\s*$/.test(l)) continue;
+      if (!/[\u4e00-\u9fa5]/.test(l)) continue;
+      return l.replace(/^(对方|我)[:：]\s*/, '');
+    }
+    return '';
+  }
+
+  function scoreIntent(line, type) {
+    var keys = type.keys.split('|');
+    var score = 0;
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (k && line.indexOf(k) >= 0) score += k.length + 1;
+    }
+    return score;
+  }
+
+  function detectIntent(text) {
+    var line = lastRealLine(text);
+    var compact = line.replace(/\s+/g, '');
+    if (!compact) return null;
+    var rows = String(text || '').trim().split('\n');
+    var lastRaw = rows.length ? (rows[rows.length - 1] || '') : '';
+    var selfSide = /^\s*我[:：]/.test(lastRaw);
+    var best = null, bestScore = 0;
+    for (var i = 0; i < INTENT_LIB.length; i++) {
+      var t = INTENT_LIB[i];
+      if (t.id === 'selfError') {
+        if (selfSide || scoreIntent(compact, t) > 0) return { type: t, line: compact, short: compact.length <= 4 };
+        continue;
+      }
+      var sc = scoreIntent(compact, t);
+      if (sc > bestScore) { bestScore = sc; best = t; }
+    }
+    if (!best) return null;
+    return { type: best, line: compact, short: compact.length <= 4 };
+  }
+
+  function localSmart(text, who) {
+    // 涉钱涉账号的先拦一道：冒充熟人、要转账要验证码的，不给「怎么回」，先不给钱
+    if (/转账|打款|卡号|账号|验证码|点击链接|点开链接|我是.{0,8}(主任|经理|领导|书记|总监)|尽快转|先垫付/.test(String(text || ''))) {
+      return {
+        risk: 'bad',
+        explain: '像冒充熟人开口要钱的：先别动钱，也别点任何链接。',
+        want: '先核实对方到底是谁',
+        replies: {
+          steady: '这个我不转，我先打您平时那个号码核实一下。',
+          close: '我这边得先跟本人通个话，确认完再说。',
+          refuse: '这钱我不能转，您让本人给我打个电话。'
+        },
+        avoid: [
+          { say: '先转一点试试', why: '试一下也是钱，而且会暴露你信了。' },
+          { say: '把卡号发过去', why: '信息给出去就收不回来。' },
+          { say: '「你谁啊」', why: '这么问，对方有的是话术绕回来。' }
+        ]
+      };
+    }
+    var found = detectIntent(text);
+    if (!found) {
+      return {
+        risk: 'ok',
+        explain: '这句我没把握，按关系先给你一句稳的，别拿它当定论。',
+        replies: { steady: '我看到了，回头细说。', close: '', refuse: '' },
+        avoid: [
+          { say: '你先别管了', why: '容易把对方的关心顶回去。' },
+          { say: '知道了，回头再说', why: '对方分不清你是答应还是敷衍。' }
+        ],
+        only: 'steady'
+      };
+    }
+    var t = found.type;
+    return {
+      risk: t.risk,
+      explain: t.name + '：' + t.meaning,
+      want: t.want,
+      replies: {
+        steady: (found.short && t.shortReply) ? t.shortReply : fillSlots(t.replies[0], found.line),
+        close: fillSlots(t.replies[1], found.line),
+        refuse: fillSlots(t.replies[2], found.line)
+      },
+      avoid: t.avoid.map(function (p) { return { say: p[0], why: p[1] }; }),
+      only: found.short ? 'steady' : '',
+      short: !!found.short
+    };
+  }
+
+  function localSimple(text, who) {
+    var scene = null;
+    for (var i = 0; i < SIMPLE_SCENES.length; i++) {
+      if (SIMPLE_SCENES[i].re.test(text)) { scene = SIMPLE_SCENES[i]; break; }
+    }
+
+    var replies;
+    if (who === '陌生号码或陌生短信') {
+      replies = {
+        steady: '你是哪位？我先打官方电话核实，不点链接，也不透露个人信息。',
+        close: '这条我先转给家里群提醒大家，不回也不点。'
+      };
+    } else {
+      var group = (who === '家里长辈' || who === '亲戚') ? 'elder'
+        : (who === '老师或导员' || who === '上司或客户') ? 'formal' : 'peer';
+      replies = SIMPLE_REPLIES[group][scene ? scene.key : 'general'];
+    }
+
+    return {
+      risk: scene ? scene.risk : 'ok',
+      explain: scene ? scene.explain : '判断不出具体事，按关系回一句稳的。',
+      replies: replies,
+      avoid: [
+        { say: '你先别管了', why: '容易把对方的关心顶回去，以后有话也不跟你讲了。' },
+        { say: '知道了，回头再说', why: '对方分不清你是答应还是敷衍，事还得再问一遍。' }
+      ]
+    };
+  }
+
+  function startApi(text) {
+    var s = readSettings();
+    var who = $('selWho').value;
+    var goal = $('selGoal').value;
+
+    setBusy(true);
+    renderLoading();
+    scrollToResult();
+
+    analyzeByModel(s, text, who, goal).then(function (data) {
+      if (data) renderResult(data);
+      else renderResult(localFallback(text), '模型没返回可用结果，先用本地示例结果');
+    }).catch(function () {
+      renderLocalSimple(localSmart(text, who), '模型接口没连上，改用本地话术库的结论');
+    }).then(function () {
+      setBusy(false);
+    });
+  }
+
+  /* ---------- 主流程 ---------- */
+  function setBusy(busy) {
+    state.busy = busy;
+    btnAnalyze.disabled = busy;
+    btnAnalyzeText.textContent = busy ? '正在看' : '帮我看懂';
+  }
+
+  function scrollToResult() {
+    var rect = resultArea.getBoundingClientRect();
+    if (rect.top > window.innerHeight - 100) {
+      window.scrollTo({ top: rect.top + window.pageYOffset - 10, behavior: 'smooth' });
+    }
+  }
+
+  function startDemo(index) {
+    setBusy(true);
+    renderLoading();
+    scrollToResult();
+    setTimeout(function () {
+      renderResult(JSON.parse(JSON.stringify(DEMO[index])));
+      setBusy(false);
+    }, 850);
+  }
+
+  function findDemoIndex(text) {
+    for (var i = 0; i < DEMO.length; i++) {
+      if (DEMO[i].text === text) return i;
+    }
+    return -1;
+  }
+
+  function runAnalyze() {
+    if (state.busy) return;
+    var text = input.value.trim();
+    if (!text) {
+      showInline('把对方的话粘到上面，或者点下面的「传张截图」。');
+      if (!manualArea.hidden) input.focus();
+      return;
+    }
+    if (text.length > MAX_LEN) {
+      showInline('太长了，先粘最关键的那一段');
+      return;
+    }
+    hideInline();
+
+    var demoIndex = findDemoIndex(text);
+    if (demoIndex >= 0) {
+      startDemo(demoIndex);
+      return;
+    }
+    if (!hasKey()) {
+      renderLocalSimple(localSmart(text, $('selWho').value), '按自建话术库判的（15 类场景 × 3 档 × 3 雷区），没接模型也能用');
+      scrollToResult();
+      return;
+    }
+    startApi(text);
+  }
+
+  /* ---------- 截图识别（只在本地认字，图不外传） ---------- */
+  var OCR_MAX_SIDE = 1600;
+  var OCR_MAX_BYTES = 10 * 1024 * 1024;
+  var ocrLoading = false;
+
+  function loadTesseract() {
+    if (window.Tesseract) return Promise.resolve(window.Tesseract);
+    if (ocrLoading) return Promise.reject(new Error('busy'));
+    ocrLoading = true;
+    var sources = [
+      'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js',
+      'https://unpkg.com/tesseract.js@5.0.4/dist/tesseract.min.js'
+    ];
+    return new Promise(function (resolve, reject) {
+      var idx = 0;
+      function tryNext() {
+        if (idx >= sources.length) {
+          ocrLoading = false;
+          reject(new Error('no-lib'));
+          return;
+        }
+        var s = document.createElement('script');
+        s.src = sources[idx++];
+        s.async = true;
+        s.onload = function () {
+          ocrLoading = false;
+          if (window.Tesseract) resolve(window.Tesseract);
+          else reject(new Error('no-lib'));
+        };
+        s.onerror = function () { tryNext(); };
+        document.head.appendChild(s);
+      }
+      tryNext();
+    });
+  }
+
+  function shrinkImage(file) {
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.width || 1;
+        var h = img.height || 1;
+        var scale = Math.min(1, OCR_MAX_SIDE / Math.max(w, h));
+        var cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(w * scale));
+        cv.height = Math.max(1, Math.round(h * scale));
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        resolve(cv);
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+
+  /* 本地认字：不再整张图一起认，而是先按行切、每行单独二值化再认。
+     微信截图里常常同时有「深底白字」的蓝色气泡和「白底黑字」的白色气泡，
+     整张图只有一种极性，一起送进去就整段崩成乱码；逐行处理才能各自判对。 */
+  var OCR_LINE_MAX_W = 2400;
+
+  function otsuValue(arr) {
+    var hist = new Float64Array(256);
+    for (var i = 0; i < arr.length; i++) hist[arr[i] | 0]++;
+    var total = arr.length;
+    var sum = 0;
+    for (var t = 0; t < 256; t++) sum += t * hist[t];
+    var sumB = 0, wB = 0, best = 0, thr = 128;
+    for (var t2 = 0; t2 < 256; t2++) {
+      wB += hist[t2];
+      if (!wB) continue;
+      var wF = total - wB;
+      if (!wF) break;
+      sumB += t2 * hist[t2];
+      var mB = sumB / wB, mF = (sum - sumB) / wF;
+      var between = wB * wF * (mB - mF) * (mB - mF);
+      if (between > best) { best = between; thr = t2; }
+    }
+    return thr;
+  }
+
+  /* 放大两倍后取灰度数组，小字才认得住 */
+  function ocrGrayImage(file) {
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var w = img.width || 1;
+        var h = img.height || 1;
+        var scale = Math.min(2, OCR_LINE_MAX_W / w);
+        if (!(scale > 0)) scale = 1;
+        var cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(w * scale));
+        cv.height = Math.max(1, Math.round(h * scale));
+        var ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        var W = cv.width, H = cv.height;
+        var px = ctx.getImageData(0, 0, W, H).data;
+        var g = new Float32Array(W * H);
+        for (var i = 0, j = 0; i < px.length; i += 4, j++) {
+          g[j] = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        }
+        URL.revokeObjectURL(url);
+        resolve(ocrCropContent({ w: W, h: H, g: g }));
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+
+  /* 先把手机样机外框、大片空白裁掉：整图求行/列标准差，只留真正有内容的那块。
+     不裁的话，外框的圆角让每一行都有方差，所有文字就粘成一整条带。 */
+  function ocrCropContent(img) {
+    var W = img.w, H = img.h, g = img.g;
+    var x0 = -1, x1 = -1, y = 0, x = 0;
+    for (x = 0; x < W; x++) {
+      var s = 0, s2 = 0;
+      for (y = 0; y < H; y++) {
+        var v = g[y * W + x];
+        s += v; s2 += v * v;
+      }
+      var m = s / H, vr = s2 / H - m * m, sd = vr > 0 ? Math.sqrt(vr) : 0;
+      if (sd > 8 && m >= 70) {
+        if (x0 < 0) x0 = x;
+        x1 = x;
+      }
+    }
+    var y0 = -1, y1 = -1;
+    for (y = 0; y < H; y++) {
+      var rs = 0, rs2 = 0;
+      for (x = 0; x < W; x++) {
+        var rv = g[y * W + x];
+        rs += rv; rs2 += rv * rv;
+      }
+      var rm = rs / W, rvr = rs2 / W - rm * rm;
+      if ((rvr > 0 ? Math.sqrt(rvr) : 0) > 8) {
+        if (y0 < 0) y0 = y;
+        y1 = y;
+      }
+    }
+    if (x0 < 0 || y0 < 0) return img;
+    var pad = 10;
+    x0 = Math.max(0, x0 - pad); x1 = Math.min(W - 1, x1 + pad);
+    y0 = Math.max(0, y0 - pad); y1 = Math.min(H - 1, y1 + pad);
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+    if (cw < W * 0.3 || ch < H * 0.3) return img;
+    var ng = new Float32Array(cw * ch);
+    for (var cy = 0; cy < ch; cy++) {
+      var src = (y0 + cy) * W + x0;
+      for (var cx2 = 0; cx2 < cw; cx2++) ng[cy * cw + cx2] = g[src + cx2];
+    }
+    return { w: cw, h: ch, g: ng };
+  }
+
+  /* 按行标准差找文字带：标准差大的行才算有字，太矮的当线或噪声丢掉 */
+  function ocrLineBands(img) {
+    var W = img.w, H = img.h, g = img.g;
+    var std = new Float32Array(H);
+    for (var y = 0; y < H; y++) {
+      var row = y * W, s = 0, s2 = 0;
+      for (var x = 0; x < W; x++) {
+        var v = g[row + x];
+        s += v; s2 += v * v;
+      }
+      var m = s / W;
+      var vr = s2 / W - m * m;
+      std[y] = vr > 0 ? Math.sqrt(vr) : 0;
+    }
+    var bands = [], start = -1;
+    for (var y2 = 0; y2 < H; y2++) {
+      if (std[y2] > 18) {
+        if (start < 0) start = y2;
+      } else if (start >= 0) {
+        if (y2 - start >= 14) bands.push([start, y2 - 1]);
+        start = -1;
+      }
+    }
+    if (start >= 0 && H - start >= 14) bands.push([start, H - 1]);
+
+    // 二次切分：一条带太高，说明好几行粘成了一整块（气泡底色和字太接近时行间没有空白），
+    // 就在带内找标准差最低的那一行当缝，递归切下去。
+    var heights = bands.map(function (b) { return b[1] - b[0] + 1; }).sort(function (a, b) { return a - b; });
+    var p25 = heights.length ? heights[Math.floor(heights.length * 0.25)] : 0;
+    var limit = Math.max(46, p25 * 1.8);
+    var out = [];
+    bands.forEach(function (b) { splitTallBand(std, b[0], b[1], limit, out, 0); });
+    return out.length ? out : bands;
+  }
+
+  function splitTallBand(std, y0, y1, limit, out, depth) {
+    if ((y1 - y0 + 1) <= limit || depth > 6) { out.push([y0, y1]); return; }
+    var ref = 0;
+    for (var y = y0; y <= y1; y++) if (std[y] > ref) ref = std[y];
+    var lowThr = Math.max(6, ref * 0.3);
+    var bestY = -1, bestV = 1e9;
+    for (var y2 = y0 + 12; y2 <= y1 - 12; y2++) {
+      if (std[y2] < bestV) { bestV = std[y2]; bestY = y2; }
+    }
+    if (bestY < 0 || bestV > lowThr) { out.push([y0, y1]); return; }
+    var cutA = bestY, cutB = bestY;
+    while (cutA - 1 >= y0 + 12 && std[cutA - 1] <= lowThr) cutA--;
+    while (cutB + 1 <= y1 - 12 && std[cutB + 1] <= lowThr) cutB++;
+    if (cutA - y0 < 14 || y1 - cutB < 14) { out.push([y0, y1]); return; }
+    splitTallBand(std, y0, cutA - 1, limit, out, depth + 1);
+    splitTallBand(std, cutB + 1, y1, limit, out, depth + 1);
+  }
+
+  /* 一条文字带里只取最宽的那段连续文字列（头像、图标被列间隙隔开，自然被排掉），
+     裁出来单独二值化：多数像素偏暗说明是浅字深底，反色成白底黑字 */
+  function ocrLineCrop(img, y0, y1) {
+    var W = img.w, g = img.g;
+    var lo = 255, hi = 0;
+    for (var y = y0; y <= y1; y++) {
+      var row = y * W;
+      for (var x = 0; x < W; x++) {
+        var v = g[row + x];
+        if (v < lo) lo = v;
+        if (v > hi) hi = v;
+      }
+    }
+    var mid = (lo + hi) / 2;
+    var span = Math.max(10, (hi - lo) * 0.3);
+    var cols = new Int32Array(W);
+    for (var y2 = y0; y2 <= y1; y2++) {
+      var row2 = y2 * W;
+      for (var x2 = 0; x2 < W; x2++) {
+        if (Math.abs(g[row2 + x2] - mid) > span) cols[x2]++;
+      }
+    }
+    var bestS = -1, bestE = -1, s = -1, lastHit = -1;
+    for (var x3 = 0; x3 < W; x3++) {
+      if (cols[x3] > 0) {
+        if (s < 0) s = x3;
+        lastHit = x3;
+      } else if (s >= 0 && x3 - lastHit > 28) {
+        if (lastHit - s > bestE - bestS) { bestS = s; bestE = lastHit; }
+        s = -1;
+      }
+    }
+    if (s >= 0 && lastHit - s > bestE - bestS) { bestS = s; bestE = lastHit; }
+
+    // 键盘、输入栏图标行：底部区域里出现一排「等间距」的短块，整条丢掉，别当字认
+    if (y0 > img.h * 0.82) {
+      var runs = [], rs = -1, rl = -1;
+      for (var x4 = 0; x4 < W; x4++) {
+        if (cols[x4] > 0) { if (rs < 0) rs = x4; rl = x4; }
+        else if (rs >= 0 && x4 - rl > 3) { runs.push([rs, rl]); rs = -1; }
+      }
+      if (rs >= 0) runs.push([rs, rl]);
+      if (runs.length >= 8) {
+        var gaps = [], mean = 0;
+        for (var g2 = 1; g2 < runs.length; g2++) {
+          var gp = runs[g2][0] - runs[g2 - 1][1];
+          gaps.push(gp); mean += gp;
+        }
+        mean /= gaps.length;
+        var dev = 0;
+        for (var g3 = 0; g3 < gaps.length; g3++) dev += (gaps[g3] - mean) * (gaps[g3] - mean);
+        dev = Math.sqrt(dev / gaps.length);
+        if (mean > 0 && dev / mean < 0.3) return null;
+      }
+    }
+
+    if (bestS < 0 || bestE - bestS < 12) return null;
+
+    var x0 = Math.max(0, bestS - 8), x1 = Math.min(W - 1, bestE + 8);
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+    if (cw < 8 || ch < 8) return null;
+
+    var crop = new Uint8Array(cw * ch);
+    for (var yy = 0; yy < ch; yy++) {
+      var srcRow = (y0 + yy) * W + x0;
+      for (var xx = 0; xx < cw; xx++) crop[yy * cw + xx] = g[srcRow + xx];
+    }
+    var thr = otsuValue(crop);
+    var below = 0;
+    for (var k = 0; k < crop.length; k++) if (crop[k] <= thr) below++;
+    var invert = below > crop.length / 2;
+
+    var pad = 14;
+    var pw = cw + pad * 2, ph = ch + pad * 2;
+    var out = document.createElement('canvas');
+    out.width = pw;
+    out.height = ph;
+    var octx = out.getContext('2d');
+    var od = octx.createImageData(pw, ph);
+    var op = od.data;
+    for (var q = 0; q < op.length; q += 4) {
+      op[q] = 255; op[q + 1] = 255; op[q + 2] = 255; op[q + 3] = 255;
+    }
+    for (var yb = 0; yb < ch; yb++) {
+      for (var xb = 0; xb < cw; xb++) {
+        var v2 = crop[yb * cw + xb];
+        var isText = invert ? (v2 > thr) : (v2 <= thr);
+        var val = isText ? 0 : 255;
+        var o = ((yb + pad) * pw + (xb + pad)) * 4;
+        op[o] = val; op[o + 1] = val; op[o + 2] = val; op[o + 3] = 255;
+      }
+    }
+    octx.putImageData(od, 0, 0);
+    return { canvas: out, h: ph };
+  }
+
+  /* 逐行识别；置信度太低的行（头像、状态栏、表情包）直接扔掉，别的行留着 */
+  function ocrByLines(file, T, onProgress) {
+    var langPath = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/chi_sim/4.0.0';
+    return ocrGrayImage(file).then(function (img) {
+      if (!img) throw new Error('bad-image');
+      var all = ocrLineBands(img);
+      var bands = all.length > 40 ? all.slice(0, 40) : all;
+      if (!bands.length) return { lines: [], total: 0 };
+      return T.createWorker('chi_sim', undefined, {
+        logger: onProgress,
+        langPath: langPath
+      }).then(function (worker) {
+        var lines = [];
+        var idx = 0;
+        function step() {
+          if (idx >= bands.length) return Promise.resolve();
+          var b = bands[idx++];
+          var c = ocrLineCrop(img, Math.max(0, b[0] - 3), Math.min(img.h - 1, b[1] + 3));
+          if (onProgress) onProgress({ line: idx, total: bands.length });
+          if (!c) return step();
+          return worker.setParameters({ tessedit_pageseg_mode: c.h > 75 ? '6' : '7' })
+            .then(function () { return worker.recognize(c.canvas); })
+            .then(function (res) {
+              var txt = String((res && res.data && res.data.text) || '').replace(/\s+/g, ' ').trim();
+              var conf = (res && res.data && res.data.confidence) || 0;
+              if (txt && conf >= 45) lines.push(txt);
+              return step();
+            });
+        }
+        return step().then(function () {
+          return worker.terminate().then(function () {
+            return { lines: lines, total: bands.length };
+          });
+        }, function (err) {
+          return worker.terminate().then(function () { throw err; });
+        });
+      });
+    });
+  }
+
+  /* 兜底：整张缩到 1600 以内直接认，慢一些但不至于因为切行出错就什么都没有 */
+  function ocrWholeImage(file, T) {
+    var langPath = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/chi_sim/4.0.0';
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var w = img.width || 1, h = img.height || 1;
+          var scale = Math.min(1, 1600 / Math.max(w, h));
+          var cv = document.createElement('canvas');
+          cv.width = Math.max(1, Math.round(w * scale));
+          cv.height = Math.max(1, Math.round(h * scale));
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          URL.revokeObjectURL(url);
+          T.recognize(cv, 'chi_sim', { langPath: langPath }).then(function (r) {
+            resolve((r && r.data && r.data.text) || '');
+          }, reject);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('bad-image'));
+      };
+      img.src = url;
+    });
+  }
+
+  /* 认出来的字太少或者字母符号太多，就当乱码，不拿去出结论 */
+  function looksGarbled(text) {
+    var compact = String(text || '').replace(/\s+/g, '');
+    if (!compact) return true;
+    var han = (compact.match(/[\u4e00-\u9fa5]/g) || []).length;
+    var noise = (compact.match(/[A-Za-z\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]/g) || []).length;
+    return han < 6 || (noise / compact.length) > 0.2;
+  }
+
+  /* 手写体/艺术字嫌疑：本地认字只认印刷体，遇到花体字会把字拆成「JJT 吴」「OFT 吴」这种
+     汉字夹拉丁字母的碎片。这种结果不能当结论用，得先提醒人，别拿它去判断。 */
+  function looksHandwritten(text) {
+    var lines = String(text || '').split('\n').filter(function (l) { return l.trim(); });
+    if (!lines.length) return false;
+    var badLines = 0;
+    lines.forEach(function (l) {
+      var han = (l.match(/[\u4e00-\u9fa5]/g) || []).length;
+      var latinRun = (l.match(/[A-Za-z]{2,}/g) || []).length;
+      var stray = (l.match(/[《》〈〉丨丿丶]|[\u4e00-\u9fa5][A-Za-z\u4e00-\u9fa5]{0,2}[A-Za-z]/g) || []).length;
+      if (han < 3 || latinRun >= 1 || stray >= 2) badLines++;
+    });
+    return badLines / lines.length >= 0.3;
+  }
+
+  /* 聊天截图 OCR 文本清洗：去掉时间、占位、表情包噪声，只像人说的话留下 */
+  function cleanOcrText(raw) {
+    var text = String(raw || '').replace(/\r/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    if (!text) return '';
+
+    var lines = text.split('\n').map(function (l) { return l.trim(); });
+
+    // 1) 整行时间戳（24h / 12h / 月日 / 星期）—— 前置词和日期部分允许空格、允许日号缺数字（如「11 月 日 21.48」）
+    var timeOnly = /^\s*(?:(?:星期[一二三四五六日天]|[一二三四五六日]|昨天|今天|前天|上午|下午|晚上|早上|中午)\s*)?(?:\d{1,4}[年\-/.]\s*)?(?:\d{1,2}\s*[月\-/.]\s*\d{0,2}\s*[日号]?)?\s*(?:\d{1,2}[:：.]\d{2}(?:\s*(?:[APap][Mm]|上午|下午|晚上))?)\s*$/;
+    // 2) 方括号占位：[表情] [动画表情] [图片] [语音] [视频] [转账] [红包] [链接] [位置] [名片] [文件]
+    var bracketPlaceholders = /^\s*\[([^\]]{1,6})\]\s*$/;
+    var bracketKeywords = /^(表情|动画表情|图片|语音|视频|转账|红包|链接|位置|名片|文件)$/;
+    // 3) 常用口语白名单（表情包 OCR 噪声容易被误读成一两个字，白名单用来放行）
+    var whiteList = {
+      '好': 1, '好的': 1, '好呀': 1, '好哦': 1,
+      '行': 1, '可以': 1, '对': 1, '嗯': 1, '恩': 1, '嗯嗯': 1,
+      '是': 1, '是的': 1, '知道了': 1, '知道': 1, '明白': 1, '懂': 1,
+      '不': 1, '不行': 1, '不了': 1, '没': 1, '没有': 1, '没呢': 1, '没吃呢': 1,
+      '嘻嘻': 1, '哈哈': 1, '呵呵': 1, '嘿嘿': 1, '嗯嗯': 1,
+      '在': 1, '在呢': 1, '忙': 1, '忙呢': 1, '累': 1,
+      '谢了': 1, '谢谢': 1, '多谢': 1, '谢': 1, 'OK': 1, 'ok': 1, 'ok啊': 1,
+      '哦': 1, '噢': 1, '啊': 1, '呀': 1, '嗯呐': 1
+    };
+
+    var kept = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (!line) continue;
+
+      // 只含空格 / 制表符的空行已在前面被 trim 成 '' 并 continue
+
+      // 时间戳整行
+      if (timeOnly.test(line)) continue;
+
+      // 方括号占位整行
+      var bk = line.match(bracketPlaceholders);
+      if (bk && bracketKeywords.test(bk[1])) continue;
+
+      // 只有标点符号的整行
+      if (!/[\u4e00-\u9fa5A-Za-z0-9]/.test(line)) continue;
+
+      // 拉丁字母和符号占比过高、汉字少（表情包噪声常被 tesseract 读成半拉英文+符号）
+      var latinSym = (line.match(/[A-Za-z0-9\x21-\x2f\x3a-\x40\x5b-\x60\x7b-\x7e]/g) || []).length;
+      var totalChar = line.replace(/\s+/g, '').length;
+      var hanNow = (line.match(/[\u4e00-\u9fa5]/g) || []).length;
+      if (totalChar > 0 && hanNow <= 3 && latinSym / totalChar > 0.5) continue;
+
+      // 只有 1–3 个字符、且不在白名单里，多半是表情包噪声
+      var compact = line.replace(/[\s\u3000，。！？!?、,.;:：；""''《》（）()【】\[\]…—\-*#@$%^&+=~`|\/\\]/g, '');
+      if (compact.length > 0 && compact.length <= 3 && !whiteList[compact] && !whiteList[compact.toLowerCase()]) {
+        // 但如果这一行有完整语义（超过 3 个汉字或包含句末标点）就放行
+        var hanCount = (line.match(/[\u4e00-\u9fa5]/g) || []).length;
+        var hasEndPunct = /[。！？!?]$/.test(line);
+        if (hanCount <= 3 && !hasEndPunct) continue;
+      }
+
+      // 手机状态栏、输入栏、键盘：整行不是人说的话
+      if (/中国移动|中国联通|中国电信|iPhone|Wi-?Fi|空格|按住\s*说话|按住说话|语音输入|发送|相册|拍摄|视频通话|语音通话/.test(line)) continue;
+      if (/\d{1,2}[:：]\d{2}\s*[A-Za-z]{0,2}\s*$/.test(line) && /\d{1,3}%/.test(line)) continue;
+
+      kept.push(line);
+    }
+
+    return kept.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function visionScrub(text, key) {
+    var out = String(text || '');
+    if (key && key.length > 8) out = out.split(key).join('***');
+    return out.replace(/sk-[A-Za-z0-9_-]{6,}/g, 'sk-***');
+  }
+
+  function visionCandidates(s) {
+    var list = [{ url: s.vUrl, model: s.vModel }];
+    try {
+      var fb = new URL(s.vUrl).origin + '/compatible-mode/v1/chat/completions';
+      list.push({ url: fb, model: 'qwen3-vl-plus' });
+      list.push({ url: fb, model: 'qwen-vl-ocr' });
+    } catch (e) { /* 地址解析不了，就只试设置里那一个 */ }
+    var seen = {};
+    var out = [];
+    list.forEach(function (c) {
+      var k = c.url + '|' + c.model;
+      if (!seen[k]) { seen[k] = 1; out.push(c); }
+    });
+    return out;
+  }
+
+  function visionRawMessage(status, body) {
+    var why = '';
+    try {
+      var j = JSON.parse(body);
+      why = (j && j.error && (j.error.message || j.error.code)) || (j && (j.message || j.code)) || '';
+    } catch (e) { why = String(body || '').slice(0, 200); }
+    return 'HTTP ' + status + (why ? '：' + String(why).slice(0, 300) : '');
+  }
+
+  function visionHint(fails) {
+    var txt = fails.map(function (f) { return f.message; }).join('\n');
+    var isDash = /dashscope|aliyuncs/i.test(fails.map(function (f) { return f.url; }).join(' '));
+    var badUrl = /invalid URL|parse|malformed/i.test(txt);
+    var auth = /401|403|invalid[_\s-]?api|unauthor|authentic|Forbidden/i.test(txt);
+    var notFound = /404|not[ _-]?found/i.test(txt);
+    var badModel = /(model|模型).{0,30}(not\s*(exist|found|support)|invalid|不存在|不支持)|invalid_model/i.test(txt);
+    var net = /failed to fetch|abort|network|timed?[ _-]?out|load failed/i.test(txt);
+    var parts = [];
+    if (badUrl) parts.push('识图接口地址不是合法网址，要带 https:// 开头');
+    if (notFound) parts.push('接口地址末尾少 /chat/completions 就会 404，补上再试');
+    if (badModel) parts.push('模型名不存在，检查识图模型名有没有拼错');
+    if (auth && isDash) parts.push('Key 不对：这里要填阿里云百炼（bailian.console.aliyun.com）申请的 Key，别家的 Key 放这儿不行');
+    else if (auth) parts.push('Key 不对：确认复制完整，而且是这家服务的 Key');
+    if (!parts.length && net) parts.push('请求没发出去，多半是网络不通或当前环境拦了请求，换个能正常联网的浏览器再试');
+    if (!parts.length) parts.push('地址、模型名、Key 三样要配套：哪家的接口就配哪家的地址、模型名和 Key');
+    return parts.join('；') + '。';
+  }
+
+  function ocrByVision(file, s) {
+    return shrinkImage(file).then(function (cv) {
+      if (!cv) throw new Error('图读不进来');
+      var b64 = cv.toDataURL('image/jpeg', 0.82);
+      var tries = visionCandidates(s);
+      var fails = [];
+      var i = 0;
+
+      function attempt(cand) {
+        var controller = window.AbortController ? new AbortController() : null;
+        var timer = controller ? setTimeout(function () { controller.abort(); }, 45000) : null;
+        return fetch(cand.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + s.vKey
+          },
+          body: JSON.stringify({
+            model: cand.model,
+            temperature: 0,
+            max_tokens: 1200,
+            messages: [
+              {
+                role: 'system',
+                content: '你只做一件事：把聊天截图里的文字按顺序抄下来，一句一行。对方发的消息前面写“对方：”，自己发的消息前面写“我：”。只输出抄下来的内容，不要解释、不要总结、不要评论。认不清的字用□代替。'
+              },
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: '把这张截图里的聊天内容抄下来。' },
+                  { type: 'image_url', image_url: { url: b64 } }
+                ]
+              }
+            ]
+          }),
+          signal: controller ? controller.signal : undefined
+        }).then(function (res) {
+          if (!res.ok) {
+            return res.text().then(function (body) {
+              throw new Error(visionScrub(visionRawMessage(res.status, body), s.vKey));
+            });
+          }
+          return res.json();
+        }).then(function (json) {
+          if (timer) clearTimeout(timer);
+          var c = json && json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
+          if (Array.isArray(c)) {
+            c = c.map(function (p) { return (p && p.text) || ''; }).join('');
+          }
+          return String(c || '').trim();
+        }, function (err) {
+          if (timer) clearTimeout(timer);
+          throw new Error(visionScrub((err && err.message) || '请求失败', s.vKey));
+        });
+      }
+
+      function next() {
+        if (i >= tries.length) {
+          var err = new Error('识图接口没成功');
+          err.report = ['识图没成功，按顺序试了 ' + fails.length + ' 个接口：'].concat(
+            fails.map(function (f, idx) {
+              return (idx + 1) + '. ' + f.label + '：' + f.message;
+            }),
+            ['人话：' + visionHint(fails)]
+          );
+          throw err;
+        }
+        var cand = tries[i];
+        cand.label = i > 0 ? '同域名回退 ' + cand.model : '设置里的地址和模型 ' + cand.model;
+        i++;
+        return attempt(cand).catch(function (e) {
+          fails.push({ url: cand.url, label: cand.label, message: (e && e.message) || String(e) });
+          return next();
+        });
+      }
+
+      return next();
+    });
+  }
+
+  function recognizeShot(file) {
+    if (!file) return;
+
+    if (!/^image\//.test(file.type || '')) {
+      showInline('这个不是图片，选一张聊天截图');
+      return;
+    }
+    if (file.size > OCR_MAX_BYTES) {
+      showInline('图太大了，裁一半再传');
+      return;
+    }
+
+    setShotBusy(true, '正在认字…');
+    showInline('第一次要联网下载认字包，等二三十秒');
+
+    if (hasVision()) {
+      setShotBusy(true, '正在读图…');
+      showInline('把图发给识图接口，等十几秒');
+      ocrByVision(file, readSettings()).then(function (txt) {
+        if (!txt) {
+          showInline('图里没读出字，换张清楚点的');
+          return;
+        }
+        input.value = txt.slice(0, 6000);
+        updateCounter();
+        setManual(true);
+        hideInline();
+        toast('读出来了，看一眼有没有错字');
+        runAnalyze();
+      }).catch(function (err) {
+        if (err && err.report) {
+          showInline(err.report);
+        } else {
+          showInline('识图没成功（' + String((err && err.message) || '').slice(0, 110) + '）');
+        }
+      }).then(function () {
+        setShotBusy(false);
+      });
+      return;
+    }
+
+    var timedOut = false;
+    var killed = false;
+    var killer = setTimeout(function () {
+      timedOut = true;
+      killed = true;
+      showInline('认字等太久了，网络慢的话直接手动粘也行');
+      setShotBusy(false);
+    }, 90000);
+
+    setShotBusy(true, '正在下载认字包，约 20MB，网慢就等一分钟');
+
+    loadTesseract().then(function (T) {
+      return ocrByLines(file, T, function (m) {
+        if (timedOut || !m || !m.line) return;
+        setShotBusy(true, '正在按行认字（' + m.line + '/' + (m.total || 0) + '）');
+      }).catch(function (err) {
+        // 逐行认字挂了就退回整张识别，至少别给用户一个空结果
+        return ocrWholeImage(file, T).then(function (txt) {
+          return { lines: txt ? String(txt).split('\n') : [], total: 0 };
+        }, function () { throw err; });
+      });
+    }).then(function (res) {
+      clearTimeout(killer);
+      if (timedOut) return;
+      var raw = ((res && res.lines) || []).join('\n');
+      var text = cleanOcrText(raw);
+      if (!text) {
+        showInline('这张图没认出来，请在下面手动改一下字，再点帮我看懂');
+        input.value = raw.slice(0, 6000);
+        updateCounter();
+        setManual(true);
+        return;
+      }
+      input.value = text.slice(0, 6000);
+      updateCounter();
+      setManual(true);
+      if (looksGarbled(text)) {
+        showInline('这张图没认出来，请在下面手动改一下字，再点帮我看懂');
+        return;
+      }
+      if (looksHandwritten(text)) {
+        showInline('这张图看着是手写体或花体字，本地认字只会认印刷体，下面这些字多半不准，别拿它当结论。填一个「会看图的接口」就能读准，也可以手动把字改对再点');
+        return;
+      }
+      hideInline();
+      toast('认出来了，看一眼有没有错字');
+      runAnalyze();
+    }).catch(function (err) {
+      clearTimeout(killer);
+      if (killed) return;
+      if (err && err.message === 'no-lib') {
+        showInline('认字包下载失败，检查网络后重试，或者直接手动粘');
+      } else {
+        showInline('认字没成功（' + String((err && (err.name ? err.name + ' ' : '') + (err.message || err)) || '未知原因').slice(0, 110) + '），手动粘一下也行');
+      }
+    }).then(function () {
+      if (timedOut) return;
+      setShotBusy(false);
+    });
+  }
+
+  $('btnShot').addEventListener('click', function () { $('fileShot').click(); });
+
+  $('fileShot').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    recognizeShot(f);
+  });
+
+  /* 支持直接把截图 Ctrl+V 粘进来，省得再去系统选图框里翻文件 */
+  document.addEventListener('paste', function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].kind === 'file' && /^image\//.test(items[i].type || '')) {
+        var f = items[i].getAsFile();
+        if (f) {
+          e.preventDefault();
+          recognizeShot(f);
+          return;
+        }
+      }
+    }
+  });
+
+  btnToggleManual.addEventListener('click', function () {
+    input.focus();
+  });
+
+  $('btnReset').addEventListener('click', function () {
+    input.value = '';
+    $('fileShot').value = '';
+    updateCounter();
+    hideInline();
+    resultArea.innerHTML = '';
+    state.result = null;
+    setManual(false);
+    setShotBusy(false);
+    toast('清干净了，换一段');
+  });
+
+  btnAnalyze.addEventListener('click', runAnalyze);
+
+  input.addEventListener('input', function () {
+    updateCounter();
+    if (!inlineMsg.hidden) hideInline();
+  });
+
+  function updateCounter() {
+    var n = input.value.length;
+    counter.textContent = n + ' / ' + MAX_LEN;
+    counter.classList.toggle('over', n > MAX_LEN);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.example'), function (btn) {
+    btn.addEventListener('click', function () {
+      var idx = parseInt(btn.getAttribute('data-example'), 10);
+      input.value = DEMO[idx].text;
+      $('selWho').value = DEMO[idx].who;
+      updateCounter();
+      setManual(true);
+      hideInline();
+      toast('填好了，点“帮我看懂”');
+    });
+  });
+
+  /* 页面就绪 3 秒后预热认字库和语言包，让第一张图不用等下载 */
+  setTimeout(function () {
+    loadTesseract().then(function (T) {
+      var langPath = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/chi_sim/4.0.0';
+      T.createWorker('chi_sim', undefined, { langPath: langPath }).then(function (worker) {
+        return worker.terminate();
+      }).catch(function () { /* 语言包下不下来没关系，用户上传时会再试 */ });
+    }).catch(function () { /* 脚本加载失败也没关系 */ });
+  }, 3000);
+
+  resultArea.addEventListener('click', function (e) {
+    var target = e.target;
+    if (!target || !target.closest) return;
+
+    var copyBtn = target.closest('[data-copy]');
+    if (copyBtn && state.result) {
+      var key = copyBtn.getAttribute('data-copy');
+      var text = (state.result.replies || {})[key] || '';
+      if (!text) return;
+      var label = copyBtn.querySelector('span');
+      copyText(text).then(function () {
+        copyBtn.classList.add('done');
+        if (label) label.textContent = '复制好了';
+        toast('已复制，去微信粘贴');
+        setTimeout(function () {
+          copyBtn.classList.remove('done');
+          if (label) label.textContent = '复制';
+        }, 1600);
+      }).catch(function () {
+        toast('没复制上，长按这段文字自己选');
+      });
+      return;
+    }
+
+    var speakBtn = target.closest('[data-speak]');
+    if (speakBtn && state.result) {
+      var sKey = speakBtn.getAttribute('data-speak');
+      var sText = (state.result.replies || {})[sKey] || '';
+      if (!sText) return;
+      speakText(sText, speakBtn);
+      return;
+    }
+  });
+
+  updateCounter();
+  syncGear();
+})();
+</script>
+</body>
+</html>
