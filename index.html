@@ -1253,8 +1253,9 @@
   var mask = $('sheetMask');
 
   function readSettings() {
+    var s;
     try {
-      return {
+      s = {
         url: (localStorage.getItem(STORE.url) || '').trim() || DEFAULTS.url,
         key: (localStorage.getItem(STORE.key) || '').trim(),
         model: (localStorage.getItem(STORE.model) || '').trim() || DEFAULTS.model,
@@ -1263,8 +1264,19 @@
         vModel: (localStorage.getItem(STORE.vModel) || '').trim() || DEFAULTS.vModel
       };
     } catch (e) {
-      return { url: DEFAULTS.url, key: '', model: DEFAULTS.model, vUrl: DEFAULTS.vUrl, vKey: '', vModel: DEFAULTS.vModel };
+      s = { url: DEFAULTS.url, key: '', model: DEFAULTS.model, vUrl: DEFAULTS.vUrl, vKey: '', vModel: DEFAULTS.vModel };
     }
+    /* 只填了识图 Key（百炼那把）时，文字模型直接借同一把 Key，不再默认去连 DeepSeek 然后失败掉回关键词 */
+    if (!s.key && s.vKey && /aliyuncs|dashscope/i.test(s.vUrl)) {
+      try {
+        s.url = new URL(s.vUrl).origin + '/compatible-mode/v1/chat/completions';
+      } catch (e) {
+        s.url = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+      }
+      s.key = s.vKey;
+      if (/deepseek/i.test(s.model)) s.model = 'qwen-plus';
+    }
+    return s;
   }
 
   function hasKey() {
@@ -1956,7 +1968,7 @@
     {
       id: 'invite', name: '约见面 / 被约', risk: 'ok', shortReply: '在，你先说。', meaning: '对方抛了具体时间地点，等你确认。这时候模糊回答最伤人，等于让对方一直悬着。',
       want: '给个准话，别让人悬着',
-      keys: '有空吗|一起吃|出来玩|几点|周末|见一面|在吗',
+      keys: '有空吗|一起吃|出来玩|几点|周末|见一面',
       replies: [
         '{{时间点}}我有空，地点你定，我过去。',
         '想去，{{时间点}}行。我提前动身，你别等我。',
@@ -2014,9 +2026,9 @@
       ]
     },
     {
-      id: 'chat', name: '正常闲聊 / 接话', risk: 'ok', meaning: '对方在给话头，等你接。最忌只回「哈哈」「好」，也别一上来讲大道理。',
+      id: 'chat', name: '正常闲聊 / 接话', risk: 'ok', shortReply: '在，你先说。', meaning: '对方在给话头，等你接。最忌只回「哈哈」「好」，也别一上来讲大道理。',
       want: '接住话头，把天聊下去',
-      keys: '在干嘛|今天|刚看到|你说呢|哈哈|吃了没|忙啥|喜欢你|喜欢上你|想你了',
+      keys: '在干嘛|今天|刚看到|你说呢|哈哈|吃了没|忙啥|喜欢你|喜欢上你|想你了|在吗|在不|睡了没|干嘛呢',
       replies: [
         '刚看到你发的。你呢，{{时间点}}忙不忙？',
         '你这么说我都想马上过去了。',
@@ -2090,18 +2102,22 @@
     });
   }
 
-  /* 只取最后一句人说的话：跳过时间戳、占位、状态栏 */
+  /* 只取最后一句“对方”说的话：跳过时间戳、占位、状态栏，也跳过自己发的（右/我） */
   function lastRealLine(text) {
     var lines = String(text || '').split('\n');
+    var fallback = '';
     for (var i = lines.length - 1; i >= 0; i--) {
       var l = (lines[i] || '').trim();
       if (!l) continue;
       if (/^\s*(?:昨天|今天|前天|上午|下午|晚上|星期[一二三四五六日天])?\s*\d{1,2}[:：]\d{2}\s*$/.test(l)) continue;
       if (/^\s*\[\S{1,6}\]\s*$/.test(l)) continue;
       if (!/[\u4e00-\u9fa5]/.test(l)) continue;
-      return l.replace(/^(对方|我)[:：]\s*/, '');
+      var body = l.replace(/^(对方|我|左|右)\s*[:：]\s*/, '');
+      var isMine = /^(我|右)\s*[:：]/.test(l);
+      if (!isMine) return body;
+      if (!fallback) fallback = body;
     }
-    return '';
+    return fallback;
   }
 
   function scoreIntent(line, type) {
@@ -2692,6 +2708,21 @@
     return badLines / lines.length >= 0.3;
   }
 
+  /* 视觉接口抄回来的文字再洗一遍：只去掉整行时间戳和纯表情占位，不动正文 */
+  function tidyVisionText(raw) {
+    var lines = String(raw || '').replace(/\r/g, '').split('\n');
+    var body = [];
+    var timeOnly = /^\s*(?:(?:对方|我|左|右)\s*[:：]\s*)?(?:(?:昨天|今天|前天|上午|下午|晚上|星期[一二三四五六日天])\s*)?(?:\d{1,2}\s*[月\-/.]\s*\d{0,2}\s*[日号]?)?\s*\d{1,2}[:：]\d{2}\s*$/;
+    var onlyBracket = /^\s*(?:(?:对方|我|左|右)\s*[:：]\s*)?\[[^\]]{1,8}\]\s*$/;
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i].trim();
+      if (!l) continue;
+      if (timeOnly.test(l) || onlyBracket.test(l)) continue;
+      body.push(l);
+    }
+    return body.join('\n');
+  }
+
   /* 聊天截图 OCR 文本清洗：去掉时间、占位、表情包噪声，只像人说的话留下 */
   function cleanOcrText(raw) {
     var text = String(raw || '').replace(/\r/g, '')
@@ -2835,7 +2866,7 @@
             messages: [
               {
                 role: 'system',
-                content: '你只做一件事：把聊天截图里的文字按顺序抄下来，一句一行。对方发的消息前面写“对方：”，自己发的消息前面写“我：”。只输出抄下来的内容，不要解释、不要总结、不要评论。认不清的字用□代替。'
+                content: '把聊天截图里的文字按顺序抄下来，一句一行。按气泡位置判归属：靠右、有绿/蓝底色的是手机主人自己发的，行首写“右：”；靠左、白底或浅色底的是对方发的，行首写“左：”。只抄文字，不解释、不总结、不评论。认不清的字用□代替。'
               },
               {
                 role: 'user',
@@ -2860,7 +2891,7 @@
           if (Array.isArray(c)) {
             c = c.map(function (p) { return (p && p.text) || ''; }).join('');
           }
-          return String(c || '').trim();
+          return tidyVisionText(String(c || '').trim().replace(/^\s*右\s*[:：]/gm, '我：').replace(/^\s*左\s*[:：]/gm, '对方：'));
         }, function (err) {
           if (timer) clearTimeout(timer);
           throw new Error(visionScrub((err && err.message) || '请求失败', s.vKey));
